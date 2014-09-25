@@ -2,7 +2,10 @@
  * Message.h
  *
  *  Created on: Sep 25, 2014
- *      Author: ken
+ *  Authors:
+ *      Kenneth Platz
+ *      Joshua Olson
+ *      Brian Snedic
  */
 
 #ifndef MESSAGE_H_
