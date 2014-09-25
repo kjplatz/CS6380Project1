@@ -12,12 +12,15 @@
 #define CS6380PROJECT1_H_
 
 #include <iosfwd>
+#include <string>
 #include <vector>
 
 #if __cplusplus <= 199711L
 #    error  "This project requires a compiler that complies with the"\
             " ISO/IEC 14882:2011 standard (aka C++11)"
 #endif
+
+#define TESTING
 
 // Parse the configuration file.
 // Parameters:

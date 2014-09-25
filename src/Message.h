@@ -14,21 +14,26 @@
 #include <string>
 
 class Message {
+	char buf[1024];
+	int rcvd;
 public:
-	enum MsgType { MSG_TICK, MSG_DONE, MSG_EXPLORE, MSG_REJECT, MSG_LEADER } msgType;
-	int
+	enum MsgType { MSG_TICK, MSG_DONE, MSG_EXPLORE,
+		           MSG_REJECT, MSG_LEADER, MSG_NULL } msgType;
+	int  id;
 	// Read a message from a file descriptor
+	Message() = delete;
+	Message( const Message& ) = default;
+	Message( Message&& );
 	Message( int fd );
 
 	// Create a message
-	Message( enum MsgType );
-	Message( enum MsgType, int _id );
+	Message( enum MsgType mt, int _id=-1 ) : msgType(mt), id(_id) {};
 
 	// Send this message to the named file descriptor
 	int send( int fd );
 
 	// Generate a string representation of this message
-	std::string toString();
+	std::string toString() const;
 };
 
 
