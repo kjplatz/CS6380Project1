@@ -44,7 +44,7 @@ int main( int argc, char** argv ) {
 
 	// Dummy data to test with until we can get our configuration file parser in
 	// place.
-#ifdef TESTING
+#if 0
 	numNodes = 4;
 	nodeIds = { 11, 22, 33, 44 };
 	neighbors = {
@@ -54,6 +54,8 @@ int main( int argc, char** argv ) {
 			{ 1, 1, 1, 0 }
 	};
 #endif // TESTING
+
+	numNodes = parse_config( cfg_file, nodeIds, neighbors );
 
 	// file descriptors for neighbors to talk
     vector<vector<int>> neighbor_fds(numNodes);
@@ -126,18 +128,23 @@ int main( int argc, char** argv ) {
 
     	cout << "Sent ... " << endl;
     	sleep(1);
+
+    	// Read a message from each process file descriptor... this will either be a
+    	// LEADER message or a DONE message.
     	for( auto fd : master_fds ) {
     		int id;
     		do {
+
+    			// Get the message and parse it...
     		    Message msg( fd );
     		    id=msg.id;
     		    cout << "Got message from fd " << fd << ": " << msg.toString() << endl;
 
     	  	    switch( msg.msgType ) {
-    	 	    case Message::MSG_LEADER:
+    	 	    case Message::MSG_LEADER:  // I'm the leader
     			    done = true;
     		    // fall through
-    		    case Message::MSG_DONE:
+    		    case Message::MSG_DONE:    // I don't know, but I'm done with this round.
     			    break;
     		    default:
     			    throw runtime_error(

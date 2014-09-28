@@ -17,8 +17,8 @@ class Message {
 	char buf[1024];
 	int rcvd;
 public:
-	enum MsgType { MSG_TICK, MSG_DONE, MSG_EXPLORE,
-		           MSG_REJECT, MSG_LEADER, MSG_NULL } msgType;
+	enum MsgType {  MSG_NULL=0, MSG_TICK, MSG_DONE, MSG_EXPLORE,
+		           MSG_REJECT, MSG_LEADER } msgType;
 	int  id;
 	// Read a message from a file descriptor
 	Message() = delete;
