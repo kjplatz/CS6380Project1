@@ -1,5 +1,5 @@
 CXX = g++482
-CXXFLAGS = --std=c++11 -Wall -O0 
+CXXFLAGS = --std=c++11 -Wall -O0 -g
 LDFLAGS = -Wl,-rpath=/usr/local/gcc482/lib64 -lpthread -lsctp
 
 CXXFILES = src/main.cpp src/Message.cpp src/parse_config.cpp src/run_node.cpp
