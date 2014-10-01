@@ -28,3 +28,4 @@
 *.app
 CS6380Project1
 /Debug/
+/run/*.log
