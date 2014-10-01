@@ -44,6 +44,7 @@ int main( int argc, char** argv ) {
 
 	// Dummy data to test with until we can get our configuration file parser in
 	// place.
+
 #if 0
 	numNodes = 4;
 	nodeIds = { 11, 22, 33, 44 };
@@ -56,6 +57,16 @@ int main( int argc, char** argv ) {
 #endif // TESTING
 
 	numNodes = parse_config( cfg_file, nodeIds, neighbors );
+
+        cout << "Processed " << numNodes << " nodes." << endl;
+        for( int i=0; i<numNodes; i++ ) {
+            cout << "Node " << i << " has ID: " << nodeIds[i] << endl;
+            cout << "    -- Neighbors: ";
+            for( int j=0; j<neighbors[i].size(); j++ ) {
+                if ( neighbors[i][j] ) cout << j << " ";
+            }
+            cout << endl;
+        }
 
 	// file descriptors for neighbors to talk
     vector<vector<int>> neighbor_fds(numNodes);
@@ -108,7 +119,7 @@ int main( int argc, char** argv ) {
 
     	//
     	// Spawn a new thread and push it back into the thread vector array...
-    	threads.push_back( new thread( run_node, i, master_fd, neighbor_fds[i] ) );
+    	threads.push_back( new thread( run_node, nodeIds[i], master_fd, neighbor_fds[i] ) );
     }
 
     bool done=false;
@@ -133,25 +144,24 @@ int main( int argc, char** argv ) {
     	// LEADER message or a DONE message.
     	for( auto fd : master_fds ) {
     		int id;
-    		do {
 
-    			// Get the message and parse it...
-    		    Message msg( fd );
-    		    id=msg.id;
-    		    cout << "Got message from fd " << fd << ": " << msg.toString() << endl;
+    		// Get the message and parse it...
+    		Message msg( fd );
+    		id=msg.id;
+    		cout << "Got message from fd " << fd << ": " << msg.toString() << endl;
 
-    	  	    switch( msg.msgType ) {
-    	 	    case Message::MSG_LEADER:  // I'm the leader
-    			    done = true;
-    		    // fall through
-    		    case Message::MSG_DONE:    // I don't know, but I'm done with this round.
-    			    break;
-    		    default:
-    			    throw runtime_error(
-    					string{"Master thread received unexpected message: "} +
-    					msg.toString() );
-    	  	    }
-    		} while( id < round );
+    	  	switch( msg.msgType ) {
+    	 	case Message::MSG_LEADER:  // I'm the leader
+    		    done = true;
+    		// fall through
+    		case Message::MSG_DONE:    // I don't know, but I'm done with this round.
+    		    break;
+
+    		default:
+    	        throw runtime_error(
+    			    string{"Master thread received unexpected message: "} +
+    		    msg.toString() );
+    	    }
     	}
 
 #ifdef TESTING

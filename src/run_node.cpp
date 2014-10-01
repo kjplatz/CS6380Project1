@@ -53,7 +53,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
             Message msg(fd);
 
             fout << "Node " << node_id << " received message from fd " << fd <<
-                    ": " << msg.toString() << endl;
+                    ": " << msg.toString() << endl << flush;
 
             switch (msg.msgType) {
                 case Message::MSG_EXPLORE:
@@ -61,6 +61,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                     if (receivedId > maxId) {
                         maxId = receivedId;
                     }
+                    break;
                 default:
                     throw runtime_error(
                             string{"Process thread received unexpected message: "} + msg.toString());
@@ -68,7 +69,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
         }
         
         if (round == 9) {
-            Message done(Message::MSG_LEADER);
+            Message done(Message::MSG_LEADER, maxId);
             fout << "Node " << node_id << " sending message " << done.toString() << endl;
             done.send(master_fd);
         } else {
