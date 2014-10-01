@@ -13,6 +13,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <stdexcept>
 
 #include "CS6380Project1.h"
 
