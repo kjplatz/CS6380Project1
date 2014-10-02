@@ -1,0 +1,37 @@
+Starting node 15
+Node 15 received message from fd 10: TICK 1
+Node 15 received message from fd 6: EXPLORE 10
+Node 15 received message from fd 11: EXPLORE 5
+Node 15 sending message DONE 1
+Node 15 received message from fd 10: TICK 2
+Node 15 received message from fd 6: EXPLORE 25
+Node 15 received message from fd 11: EXPLORE 25
+Node 15 sending message DONE 2
+Node 15 received message from fd 10: TICK 3
+Node 15 received message from fd 6: EXPLORE 25
+Node 15 received message from fd 11: EXPLORE 25
+Node 15 sending message DONE 3
+Node 15 received message from fd 10: TICK 4
+Node 15 received message from fd 6: EXPLORE 25
+Node 15 received message from fd 11: EXPLORE 25
+Node 15 sending message DONE 4
+Node 15 received message from fd 10: TICK 5
+Node 15 received message from fd 6: EXPLORE 25
+Node 15 received message from fd 11: EXPLORE 25
+Node 15 sending message DONE 5
+Node 15 received message from fd 10: TICK 6
+Node 15 received message from fd 6: EXPLORE 25
+Node 15 received message from fd 11: EXPLORE 25
+Node 15 sending message DONE 6
+Node 15 received message from fd 10: TICK 7
+Node 15 received message from fd 6: EXPLORE 25
+Node 15 received message from fd 11: EXPLORE 25
+Node 15 sending message DONE 7
+Node 15 received message from fd 10: TICK 8
+Node 15 received message from fd 6: EXPLORE 25
+Node 15 received message from fd 11: EXPLORE 25
+Node 15 sending message DONE 8
+Node 15 received message from fd 10: TICK 9
+Node 15 received message from fd 6: EXPLORE 25
+Node 15 received message from fd 11: EXPLORE 25
+Node 15 sending message LEADER 25
