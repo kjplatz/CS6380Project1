@@ -32,36 +32,112 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
 
     int round = 0;
 
-    while (round < 10) {
+    // How many neighbors do I have?
+    int numNbrs = neighbor_fds.size();
+
+    // Who are my neighbors?
+    vector<int> neighborIds( numNbrs, -1 );
+
+    // Is my neighbor done?
+    vector<bool> isDone( numNbrs, false );
+
+    // Is my neighbor a child?
+    vector<bool> isChild( numNbrs, false );
+
+    // Am I still the leader?
+    bool isLeader = true;
+
+    // Am I done?
+    bool done = false;
+
+    // Which of my neighbors is my parent?
+    int parent = -1;
+
+    // Create initial explore message
+    Message explore( Message::MSG_EXPLORE, node_id );
+
+    // Vector of messages to send in next round.
+    // Initially we send (EXPLORE, node_id) to everyone
+    vector<Message> toSend( numNbrs, Message{ Message::MSG_EXPLORE, node_id});
+    while (!done) {
         round++;
         Message msg(master_fd);
 
         fout << "Node " << node_id << " received message from fd " << master_fd <<
                 ": " << msg.toString() << endl;
 
-        Message explr(Message::MSG_EXPLORE, maxId);
-
-        //Send maxId to all neighbors
-        for (auto fd : neighbor_fds) {
-            explr.send(fd);
+        // Send messages to all my neighbors
+        for( int i=0; i<neighbor_fds.size(); i++ ) {
+        	fout << "Sending to fd " << neighbor_fds[i] << ": " <<
+        		 toSend[i].toString() << endl;
+        	toSend[i].send( neighbor_fds[i] );
         }
 
-        //Receive message from all neighbors
-        for (auto fd : neighbor_fds) {
-            int receivedId;
+        // By default everyone gets a NULL message
+        std::fill( toSend.begin(), toSend.end(), Message{Message::MSG_NULL} );
 
-            Message msg(fd);
+        // Receive messages and process...
+        for( int i=0; i<neighbor_fds.size(); i++ ) {
+        	Message msg( neighbor_fds[i] );
+        	int receivedId;
 
-            fout << "Node " << node_id << " received message from fd " << fd <<
+            fout << "Node " << node_id <<
+            		" received message from fd " << neighbor_fds[i] <<
                     ": " << msg.toString() << endl << flush;
+            bool allDone = true;
 
             switch (msg.msgType) {
                 case Message::MSG_EXPLORE:
                     receivedId = msg.id;
-                    if (receivedId > maxId) {
+                    if ( neighborIds[i] < 0 ) {
+                    	neighborIds[i] = receivedId;
+                    }
+
+                    // Got a higher ID
+                    if (receivedId > maxId )
+                    {
+                    	parent = i;
                         maxId = receivedId;
+                        std::fill( isDone.begin(), isDone.end(), false );
+                        std::fill( isChild.begin(), isChild.end(), false );
+                        // Forward this ID on to all neighbors (but the parent)
+                        for( int j=0; j<numNbrs; j++ ) {
+                        	if ( j == parent ) continue;
+
+                        	toSend[j] = msg;
+                        }
+                    } else if ( receivedId == maxId ) {
+                    	// If we get maxId from another source, let him know
+                    	// he's not our parent...
+                    	toSend[i] = Message{Message::MSG_REJECT};
+                    } // else -- we don't need to worry about if we got
+                      // an EXPLORE smaller than our maxId.
+                      // since we're going to send a new EXPLORE out within
+                      // the next round.
+                    break;
+                case Message::MSG_REJECT:
+                    isDone[i] = true;
+                    allDone = true;
+                    for( int j=0; j<isDone.size(); j++ ) {
+                    	if ( j == parent ) continue;
+                    	allDone = allDone && isDone[j];
+                    }
+                    if ( allDone ) {
+                    	toSend[parent] = Message{Message::MSG_DONE};
                     }
                     break;
+                case Message::MSG_DONE:
+                	isDone[i] = true;
+                	isChild[i] = true;
+                	allDone = true;
+                    for( int j=0; j<isDone.size(); j++ ) {
+                    	if ( j == parent ) continue;
+                    	allDone = allDone && isDone[j];
+                    }
+                    if ( allDone ) {
+                    	toSend[parent] = Message{Message::MSG_DONE};
+                    }
+
                 default:
                     throw runtime_error(
                             string{"Process thread received unexpected message: "} + msg.toString());

@@ -26,6 +26,8 @@ public:
 	Message( Message&& );
 	Message( int fd );
 
+	Message& operator=( const Message& m ) = default;
+
 	// Create a message
 	Message( enum MsgType mt, int _id=-1 ) : msgType(mt), id(_id) {};
 
