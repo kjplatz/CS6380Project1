@@ -44,9 +44,6 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
     // Is my neighbor a child?
     vector<bool> isChild( numNbrs, false );
 
-    // Am I still the leader?
-    bool isLeader = true;
-
     // Am I done?
     bool done = false;
 
@@ -69,7 +66,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                 ": " << msg.toString() << endl;
 
         // Send messages to all my neighbors
-        for( int i=0; i<neighbor_fds.size(); i++ ) {
+        for( unsigned i=0; i<neighbor_fds.size(); i++ ) {
         	fout << "Sending to fd " << neighbor_fds[i] << ": " <<
         		 toSend[i].toString() << endl;
         	toSend[i].send( neighbor_fds[i] );
@@ -79,13 +76,20 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
         std::fill( toSend.begin(), toSend.end(), Message{Message::MSG_NULL} );
 
         // Receive messages and process...
-        for( int i=0; i<neighbor_fds.size(); i++ ) {
+        for( unsigned i=0; i<neighbor_fds.size(); i++ ) {
         	Message msg( neighbor_fds[i] );
         	int receivedId;
 
+            string pcd;
+            if ( parent == i ) pcd = "(parent)";
+            else if ( isDone[i] ) {
+                if ( isChild[i] ) pcd = "(child/done)";
+                else pcd = "(rejected/done)";
+            } else pcd = "pending";
+
             fout << "Node " << node_id <<
-            		" received message from fd " << neighbor_fds[i] <<
-                    ": " << msg.toString() << endl << flush;
+            	    " received message from fd " << neighbor_fds[i] << 
+                    " [" << neighborIds[i] << "] " << pcd << ": " << msg.toString() << endl << flush;
             bool allDone = true;
 
             switch (msg.msgType) {
@@ -99,15 +103,13 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                     if (receivedId > maxId )
                     {
                     	parent = i;
-                    	isParent = false;
                         maxId = receivedId;
                         std::fill( isDone.begin(), isDone.end(), false );
                         std::fill( isChild.begin(), isChild.end(), false );
                         // Forward this ID on to all neighbors (but the parent)
-                        for( int j=0; j<numNbrs; j++ ) {
-                        	if ( j == parent ) continue;
-
-                        	toSend[j] = msg;
+                        for( unsigned j=0; j<numNbrs; j++ ) {
+                        	if ( j == parent ) toSend[j] = Message{Message::MSG_NULL};
+                        	else               toSend[j] = msg;
                         }
                     } else if ( receivedId == maxId ) {
                     	// If we get maxId from another source, let him know
@@ -121,7 +123,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                 case Message::MSG_REJECT:
                     isDone[i] = true;
                     allDone = true;
-                    for( int j=0; j<isDone.size(); j++ ) {
+                    for( unsigned j=0; j<isDone.size(); j++ ) {
                     	if ( j == parent ) continue;
                     	allDone = allDone && isDone[j];
                     }
@@ -133,7 +135,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                 	isDone[i] = true;
                 	isChild[i] = true;
                 	allDone = true;
-                    for( int j=0; j<isDone.size(); j++ ) {
+                    for( unsigned j=0; j<isDone.size(); j++ ) {
                     	if ( j == parent ) continue;
                     	allDone = allDone && isDone[j];
                     }
@@ -145,8 +147,14 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                         }
                     }
                     break;
+
+                // Someone knows who the leader is.
                 case Message::MSG_LEADER:
                     done = true;
+                    break;
+
+                // Nothing to see here.  Really!
+                case Message::MSG_NULL:
                     break;
                 default:
                     throw runtime_error(
@@ -155,7 +163,8 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
         }
         
         Message done(Message::MSG_DONE, round);
-        fout << "Node " << node_id << " sending message " << done.toString() << " to master thread." endl;
+        fout << "Node " << node_id << " sending message " << done.toString() 
+             << " to master thread." << endl;
         done.send(master_fd);
     }
 
@@ -163,20 +172,20 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
     ostringstream os;
     
     os << "Node " << node_id << " terminating..." << endl;
-    os << "    Leader elected = " << maxID << endl;
-    if ( parent != -1 ) os << "    My parent = " << neighbor_ids[parent] << endl;
+    os << "    Leader elected = " << maxId << endl;
+    if ( parent != -1 ) os << "    My parent = " << neighborIds[parent] << endl;
     else                os << "    Woohoo!! I'm the leader!" << endl;
     os << "    My children = ";
-    for( int i=0; i<Nbrs; i++ ) {
-        if ( isChild[i] ) os << neighbor_ids[i] << " ";
+    for( int i=0; i<numNbrs; i++ ) {
+        if ( isChild[i] ) os << neighborIds[i] << " ";
     }
     os << endl;
     cout << os.str();
 
     // Propagate the LEADER message down the tree...
-    Message msg{ Message::MSG_LEADER, maxID );
-    for( int j=0; j<isDone.size(); j++ ) {
-        if ( isChild[j] ) msg.send( nbrs[i] );
+    Message msg{ Message::MSG_LEADER, maxId };
+    for( unsigned j=0; j<isDone.size(); j++ ) {
+        if ( isChild[j] ) msg.send( neighbor_fds[j] );
     }
     
     // Let the Master thread know we're done and to stop listening to us.

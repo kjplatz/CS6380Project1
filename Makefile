@@ -14,7 +14,7 @@ clean:
 	rm -f src/*.o bin/CS6380Project1
 	
 .cpp.o:
-	$(CXX) $(CXXFLAGS) -c $<
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 src/main.o: src/main.cpp src/Message.h src/CS6380Project1.h
 src/Message.o: src/Message.cpp src/Message.h

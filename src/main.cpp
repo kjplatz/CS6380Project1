@@ -62,7 +62,7 @@ int main( int argc, char** argv ) {
         for( int i=0; i<numNodes; i++ ) {
             cout << "Node " << i << " has ID: " << nodeIds[i] << endl;
             cout << "    -- Neighbors: ";
-            for( int j=0; j<neighbors[i].size(); j++ ) {
+            for( unsigned j=0; j<neighbors[i].size(); j++ ) {
                 if ( neighbors[i][j] ) cout << j << " ";
             }
             cout << endl;
