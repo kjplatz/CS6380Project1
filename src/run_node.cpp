@@ -61,6 +61,8 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
     vector<Message> toSend( numNbrs, Message{ Message::MSG_EXPLORE, node_id});
     while (!done) {
         round++;
+        
+        // Wait for the next "TICK"
         Message msg(master_fd);
 
         fout << "Node " << node_id << " received message from fd " << master_fd <<
@@ -97,6 +99,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                     if (receivedId > maxId )
                     {
                     	parent = i;
+                    	isParent = false;
                         maxId = receivedId;
                         std::fill( isDone.begin(), isDone.end(), false );
                         std::fill( isChild.begin(), isChild.end(), false );
@@ -142,20 +145,40 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                         }
                     }
                     break;
+                case Message::MSG_LEADER:
+                    done = true;
+                    break;
                 default:
                     throw runtime_error(
                             string{"Process thread received unexpected message: "} + msg.toString());
             }
         }
         
-        if (round == 9) {
-            Message done(Message::MSG_LEADER, maxId);
-            fout << "Node " << node_id << " sending message " << done.toString() << endl;
-            done.send(master_fd);
-        } else {
-            Message done(Message::MSG_DONE, round);
-            fout << "Node " << node_id << " sending message " << done.toString() << endl;
-            done.send(master_fd);
-        }
+        Message done(Message::MSG_DONE, round);
+        fout << "Node " << node_id << " sending message " << done.toString() << " to master thread." endl;
+        done.send(master_fd);
     }
+
+    // If we get here, we're done.  Wootwoot!
+    ostringstream os;
+    
+    os << "Node " << node_id << " terminating..." << endl;
+    os << "    Leader elected = " << maxID << endl;
+    if ( parent != -1 ) os << "    My parent = " << neighbor_ids[parent] << endl;
+    else                os << "    Woohoo!! I'm the leader!" << endl;
+    os << "    My children = ";
+    for( int i=0; i<Nbrs; i++ ) {
+        if ( isChild[i] ) os << neighbor_ids[i] << " ";
+    }
+    os << endl;
+    cout << os.str();
+
+    // Propagate the LEADER message down the tree...
+    Message msg{ Message::MSG_LEADER, maxID );
+    for( int j=0; j<isDone.size(); j++ ) {
+        if ( isChild[j] ) msg.send( nbrs[i] );
+    }
+    
+    // Let the Master thread know we're done and to stop listening to us.
+    msg.send( master_fd );
 }
