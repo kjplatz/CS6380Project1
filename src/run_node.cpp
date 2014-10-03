@@ -135,9 +135,13 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                     	allDone = allDone && isDone[j];
                     }
                     if ( allDone ) {
-                    	toSend[parent] = Message{Message::MSG_DONE};
+                        if ( parent == -1 ) {
+                            done = true;
+                        } else {
+                    	    toSend[parent] = Message{Message::MSG_DONE};
+                        }
                     }
-
+                    break;
                 default:
                     throw runtime_error(
                             string{"Process thread received unexpected message: "} + msg.toString());
