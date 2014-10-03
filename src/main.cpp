@@ -125,6 +125,7 @@ int main( int argc, char** argv ) {
     bool done=false;
     int round=0;
 
+    int leader;
     while( !done ) {
     	round++;
     	sleep(1);
@@ -152,6 +153,7 @@ int main( int argc, char** argv ) {
 
     	  	switch( msg.msgType ) {
     	 	case Message::MSG_LEADER:  // I'm the leader
+    	 		leader = id;
     		    done = true;
     		// fall through
     		case Message::MSG_DONE:    // I don't know, but I'm done with this round.
@@ -168,6 +170,15 @@ int main( int argc, char** argv ) {
     	// This is just so we don't go into an infinite loop...
     	if ( round > numNodes * 2 ) done = true;
 #endif
+    }
+
+    Message leaderMsg{ Message::MSG_LEADER, leader };
+    for( auto fd : master_fds ) {
+    	leaderMsg.send( fd );
+    }
+
+    for( auto thread : threads ) {
+    	thread->join();
     }
 
 }
