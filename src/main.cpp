@@ -122,11 +122,10 @@ int main( int argc, char** argv ) {
     	threads.push_back( new thread( run_node, nodeIds[i], master_fd, neighbor_fds[i] ) );
     }
 
-    bool done=false;
     int round=0;
 
     int leader;
-    while( !done ) {
+    while( master_fds.size() > 0 ) {
     	round++;
     	sleep(1);
 
@@ -143,18 +142,18 @@ int main( int argc, char** argv ) {
 
     	// Read a message from each process file descriptor... this will either be a
     	// LEADER message or a DONE message.
-    	for( auto fd : master_fds ) {
+    	for( int i=0; i<master_fds.size(); i++ ) {
     		int id;
 
     		// Get the message and parse it...
-    		Message msg( fd );
+    		Message msg( master_fds[i] );
     		id=msg.id;
-    		cout << "Got message from fd " << fd << ": " << msg.toString() << endl;
+    		cout << "Got message from fd " << master_fds[i] << ": " << msg.toString() << endl;
 
     	  	switch( msg.msgType ) {
-    	 	case Message::MSG_LEADER:  // I'm the leader
-    	 		leader = id;
-    		    done = true;
+    	 	case Message::MSG_LEADER:  // I know who the leader is.  Ignore me from here on out
+    	 	    cout << "Ignoring future messages from " << master_fds[i] << "..." << endl;
+    		    master_fds.erase( master_fds.begin() + i );
     		// fall through
     		case Message::MSG_DONE:    // I don't know, but I'm done with this round.
     		    break;
@@ -165,21 +164,13 @@ int main( int argc, char** argv ) {
     		    msg.toString() );
     	    }
     	}
-
-#ifdef TESTING
-    	// This is just so we don't go into an infinite loop...
-    	if ( round > numNodes * 2 ) done = true;
-#endif
-    }
-
-    Message leaderMsg{ Message::MSG_LEADER, leader };
-    for( auto fd : master_fds ) {
-    	leaderMsg.send( fd );
     }
 
     for( auto thread : threads ) {
     	thread->join();
     }
+    
+    cout << "All threads terminated... exiting" << endl;
 
 }
 
