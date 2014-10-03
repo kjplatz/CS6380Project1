@@ -1,43 +1,53 @@
 Starting node 10
-Node 10 received message from fd 4: TICK 1
-Sending to fd 5: EXPLORE 10
-Sending to fd 7: EXPLORE 10
-Node 10 received message from fd 5 [-1] pending: EXPLORE 15
-Node 10 received message from fd 7 [-1] pending: EXPLORE 25
-Node 10 sending message DONE 1 to master thread.
-Node 10 received message from fd 4: TICK 2
-Sending to fd 5: EXPLORE 25
-Sending to fd 7: (NULL) -1
-Node 10 received message from fd 5 [15] pending: (NULL) -1
-Node 10 received message from fd 7 [25] (parent): (NULL) -1
-Node 10 sending message DONE 2 to master thread.
-Node 10 received message from fd 4: TICK 3
-Sending to fd 5: (NULL) -1
-Sending to fd 7: (NULL) -1
-Node 10 received message from fd 5 [15] pending: (NULL) -1
-Node 10 received message from fd 7 [25] (parent): (NULL) -1
-Node 10 sending message DONE 3 to master thread.
-Node 10 received message from fd 4: TICK 4
-Sending to fd 5: (NULL) -1
-Sending to fd 7: (NULL) -1
-Node 10 received message from fd 5 [15] pending: (NULL) -1
-Node 10 received message from fd 7 [25] (parent): (NULL) -1
-Node 10 sending message DONE 4 to master thread.
-Node 10 received message from fd 4: TICK 5
-Sending to fd 5: (NULL) -1
-Sending to fd 7: (NULL) -1
-Node 10 received message from fd 5 [15] pending: (NULL) -1
-Node 10 received message from fd 7 [25] (parent): (NULL) -1
-Node 10 sending message DONE 5 to master thread.
-Node 10 received message from fd 4: TICK 6
-Sending to fd 5: (NULL) -1
-Sending to fd 7: (NULL) -1
-Node 10 received message from fd 5 [15] pending: (NULL) -1
-Node 10 received message from fd 7 [25] (parent): (NULL) -1
-Node 10 sending message DONE 6 to master thread.
-Node 10 received message from fd 4: TICK 7
-Sending to fd 5: (NULL) -1
-Sending to fd 7: (NULL) -1
-Node 10 received message from fd 5 [15] pending: (NULL) -1
-Node 10 received message from fd 7 [25] (parent): (NULL) -1
-Node 10 sending message DONE 7 to master thread.
+Begin of round 1
+--  Sending to fd 5: EXPLORE 10
+--  Sending to fd 7: EXPLORE 10
+--  Node 10 received message from fd 5 [-1] pending: EXPLORE 15
+End of round 1
+Begin of round 2
+--  Sending to fd 5: (NULL) -1
+--  Sending to fd 7: EXPLORE 15
+--  Node 10 received message from fd 5 [15] (parent): (NULL) -1
+--  Node 10 received message from fd 7 [-1] pending: EXPLORE 25
+End of round 2
+Begin of round 3
+--  Sending to fd 5: EXPLORE 25
+--  Sending to fd 7: (NULL) -1
+--  Node 10 received message from fd 5 [15] pending: (NULL) -1
+--  Node 10 received message from fd 7 [25] (parent): (NULL) -1
+End of round 3
+Begin of round 4
+--  Sending to fd 5: (NULL) -1
+--  Sending to fd 7: (NULL) -1
+--  Node 10 received message from fd 5 [15] pending: DONE -1
+--  Node 10 received message from fd 7 [25] (parent): (NULL) -1
+End of round 4
+Begin of round 5
+--  Sending to fd 5: (NULL) -1
+--  Sending to fd 7: DONE -1
+--  Node 10 received message from fd 7 [25] (parent): (NULL) -1
+End of round 5
+Begin of round 6
+--  Sending to fd 5: (NULL) -1
+--  Sending to fd 7: (NULL) -1
+--  Node 10 received message from fd 5 [15] (child/done): (NULL) -1
+--  Node 10 received message from fd 7 [25] (parent): (NULL) -1
+End of round 6
+Begin of round 7
+--  Sending to fd 5: (NULL) -1
+--  Sending to fd 7: (NULL) -1
+--  Node 10 received message from fd 5 [15] (child/done): (NULL) -1
+--  Node 10 received message from fd 7 [25] (parent): (NULL) -1
+End of round 7
+Begin of round 8
+--  Sending to fd 5: (NULL) -1
+--  Sending to fd 7: (NULL) -1
+--  Node 10 received message from fd 5 [15] (child/done): (NULL) -1
+--  Node 10 received message from fd 7 [25] (parent): LEADER 25
+Node 10 terminating...
+    Leader elected = 25
+    My parent = 25
+    My children = 15 
+Sending LEADER 25 to 5 [15]
+Sending LEADER 25 to 7 [25]
+Sending LEADER 25 to master thread.

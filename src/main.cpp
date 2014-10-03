@@ -40,22 +40,6 @@ int main( int argc, char** argv ) {
 	}
 
 	string cfg_file{ argv[1] };
-	// numNodes = parse_config( cfg_file, nodeIds, neighbors );
-
-	// Dummy data to test with until we can get our configuration file parser in
-	// place.
-
-#if 0
-	numNodes = 4;
-	nodeIds = { 11, 22, 33, 44 };
-	neighbors = {
-			{ 0, 1, 1, 1 },
-			{ 1, 0, 1, 1 },
-			{ 1, 1, 0, 1 },
-			{ 1, 1, 1, 0 }
-	};
-#endif // TESTING
-
 	numNodes = parse_config( cfg_file, nodeIds, neighbors );
 
         cout << "Processed " << numNodes << " nodes." << endl;
@@ -89,7 +73,7 @@ int main( int argc, char** argv ) {
     	// File descriptor we'll talk to our master on...
     	int master_fd = sockpair[1];
 
-    	cout << "Thread " << i << " has socketpair " << sockpair[0] << ", " << sockpair[1] << endl;
+//    	cout << "Thread " << i << " has socketpair " << sockpair[0] << ", " << sockpair[1] << endl;
 
     	for( int j=0; j<numNodes; j++ ) {
     		if ( i == j ) continue;
@@ -132,14 +116,15 @@ int main( int argc, char** argv ) {
     	Message tick( Message::MSG_TICK, round );
 
     	// Send a tick to everyone
-    	cout << "Sending to all threads: " << tick.toString() << endl;
+    	cout << "Sending to " << master_fds.size() <<
+    			" threads: " << tick.toString() << endl;
     	for( auto fd : master_fds ) {
     		tick.send( fd );
     	}
 
-    	cout << "Sent ... " << endl;
     	sleep(1);
 
+    	int doneCount=0;
     	// Read a message from each process file descriptor... this will either be a
     	// LEADER message or a DONE message.
     	for( int i=0; i<master_fds.size(); i++ ) {
@@ -148,14 +133,15 @@ int main( int argc, char** argv ) {
     		// Get the message and parse it...
     		Message msg( master_fds[i] );
     		id=msg.id;
-    		cout << "Got message from fd " << master_fds[i] << ": " << msg.toString() << endl;
 
     	  	switch( msg.msgType ) {
     	 	case Message::MSG_LEADER:  // I know who the leader is.  Ignore me from here on out
-    	 	    cout << "Ignoring future messages from " << master_fds[i] << "..." << endl;
+    	 		cout << "Got message from fd " << master_fds[i] << ": " << msg.toString() << endl;
     		    master_fds.erase( master_fds.begin() + i );
+    		    break;
     		// fall through
     		case Message::MSG_DONE:    // I don't know, but I'm done with this round.
+    			doneCount++;
     		    break;
 
     		default:
@@ -164,6 +150,7 @@ int main( int argc, char** argv ) {
     		    msg.toString() );
     	    }
     	}
+    	cout << "Received DONE from " << doneCount << " threads." << endl;
     }
 
     for( auto thread : threads ) {

@@ -1,43 +1,60 @@
 Starting node 15
-Node 15 received message from fd 10: TICK 1
-Sending to fd 6: EXPLORE 15
-Sending to fd 11: EXPLORE 15
-Node 15 received message from fd 6 [-1] pending: EXPLORE 10
-Node 15 received message from fd 11 [-1] pending: EXPLORE 5
-Node 15 sending message DONE 1 to master thread.
-Node 15 received message from fd 10: TICK 2
-Sending to fd 6: (NULL) -1
-Sending to fd 11: (NULL) -1
-Node 15 received message from fd 6 [10] pending: EXPLORE 25
-Node 15 received message from fd 11 [5] pending: EXPLORE 25
-Node 15 sending message DONE 2 to master thread.
-Node 15 received message from fd 10: TICK 3
-Sending to fd 6: (NULL) -1
-Sending to fd 11: REJECT -1
-Node 15 received message from fd 6 [10] (parent): (NULL) -1
-Node 15 received message from fd 11 [5] pending: (NULL) -1
-Node 15 sending message DONE 3 to master thread.
-Node 15 received message from fd 10: TICK 4
-Sending to fd 6: (NULL) -1
-Sending to fd 11: (NULL) -1
-Node 15 received message from fd 6 [10] (parent): (NULL) -1
-Node 15 received message from fd 11 [5] pending: (NULL) -1
-Node 15 sending message DONE 4 to master thread.
-Node 15 received message from fd 10: TICK 5
-Sending to fd 6: (NULL) -1
-Sending to fd 11: (NULL) -1
-Node 15 received message from fd 6 [10] (parent): (NULL) -1
-Node 15 received message from fd 11 [5] pending: (NULL) -1
-Node 15 sending message DONE 5 to master thread.
-Node 15 received message from fd 10: TICK 6
-Sending to fd 6: (NULL) -1
-Sending to fd 11: (NULL) -1
-Node 15 received message from fd 6 [10] (parent): (NULL) -1
-Node 15 received message from fd 11 [5] pending: (NULL) -1
-Node 15 sending message DONE 6 to master thread.
-Node 15 received message from fd 10: TICK 7
-Sending to fd 6: (NULL) -1
-Sending to fd 11: (NULL) -1
-Node 15 received message from fd 6 [10] (parent): (NULL) -1
-Node 15 received message from fd 11 [5] pending: (NULL) -1
-Node 15 sending message DONE 7 to master thread.
+Begin of round 1
+--  Sending to fd 6: EXPLORE 15
+--  Sending to fd 11: EXPLORE 15
+--  Node 15 received message from fd 6 [-1] pending: EXPLORE 10
+--  Node 15 received message from fd 11 [-1] pending: EXPLORE 5
+End of round 1
+Begin of round 2
+--  Sending to fd 6: (NULL) -1
+--  Sending to fd 11: (NULL) -1
+--  Node 15 received message from fd 6 [10] pending: (NULL) -1
+--  Node 15 received message from fd 11 [5] pending: (NULL) -1
+End of round 2
+Begin of round 3
+--  Sending to fd 6: (NULL) -1
+--  Sending to fd 11: (NULL) -1
+--  Node 15 received message from fd 6 [10] pending: EXPLORE 25
+--  Node 15 received message from fd 11 [5] pending: EXPLORE 25
+End of round 3
+Begin of round 4
+--  Sending to fd 6: DONE -1
+--  Sending to fd 11: REJECT -1
+--  Node 15 received message from fd 6 [10] (parent): (NULL) -1
+--  Node 15 received message from fd 11 [5] (rejected/done): (NULL) -1
+End of round 4
+Begin of round 5
+--  Sending to fd 6: (NULL) -1
+--  Sending to fd 11: (NULL) -1
+--  Node 15 received message from fd 6 [10] (parent): (NULL) -1
+--  Node 15 received message from fd 11 [5] (rejected/done): (NULL) -1
+End of round 5
+Begin of round 6
+--  Sending to fd 6: (NULL) -1
+--  Sending to fd 11: (NULL) -1
+--  Node 15 received message from fd 6 [10] (parent): (NULL) -1
+--  Node 15 received message from fd 11 [5] (rejected/done): (NULL) -1
+End of round 6
+Begin of round 7
+--  Sending to fd 6: (NULL) -1
+--  Sending to fd 11: (NULL) -1
+--  Node 15 received message from fd 6 [10] (parent): (NULL) -1
+--  Node 15 received message from fd 11 [5] (rejected/done): (NULL) -1
+End of round 7
+Begin of round 8
+--  Sending to fd 6: (NULL) -1
+--  Sending to fd 11: (NULL) -1
+--  Node 15 received message from fd 6 [10] (parent): (NULL) -1
+--  Node 15 received message from fd 11 [5] (rejected/done): (NULL) -1
+End of round 8
+Begin of round 9
+--  Sending to fd 6: (NULL) -1
+--  Sending to fd 11: (NULL) -1
+--  Node 15 received message from fd 6 [10] (parent): LEADER 25
+Node 15 terminating...
+    Leader elected = 25
+    My parent = 10
+    My children = 
+Sending LEADER 25 to 6 [10]
+Sending LEADER 25 to 11 [5]
+Sending LEADER 25 to master thread.

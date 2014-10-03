@@ -1,43 +1,53 @@
 Starting node 5
-Node 5 received message from fd 14: TICK 1
-Sending to fd 12: EXPLORE 5
-Sending to fd 15: EXPLORE 5
-Node 5 received message from fd 12 [-1] pending: EXPLORE 15
-Node 5 received message from fd 15 [-1] pending: EXPLORE 25
-Node 5 sending message DONE 1 to master thread.
-Node 5 received message from fd 14: TICK 2
-Sending to fd 12: EXPLORE 25
-Sending to fd 15: (NULL) -1
-Node 5 received message from fd 12 [15] pending: (NULL) -1
-Node 5 received message from fd 15 [25] (parent): (NULL) -1
-Node 5 sending message DONE 2 to master thread.
-Node 5 received message from fd 14: TICK 3
-Sending to fd 12: (NULL) -1
-Sending to fd 15: (NULL) -1
-Node 5 received message from fd 12 [15] pending: REJECT -1
-Node 5 received message from fd 15 [25] (parent): (NULL) -1
-Node 5 sending message DONE 3 to master thread.
-Node 5 received message from fd 14: TICK 4
-Sending to fd 12: (NULL) -1
-Sending to fd 15: DONE -1
-Node 5 received message from fd 12 [15] (rejected/done): (NULL) -1
-Node 5 received message from fd 15 [25] (parent): (NULL) -1
-Node 5 sending message DONE 4 to master thread.
-Node 5 received message from fd 14: TICK 5
-Sending to fd 12: (NULL) -1
-Sending to fd 15: (NULL) -1
-Node 5 received message from fd 12 [15] (rejected/done): (NULL) -1
-Node 5 received message from fd 15 [25] (parent): (NULL) -1
-Node 5 sending message DONE 5 to master thread.
-Node 5 received message from fd 14: TICK 6
-Sending to fd 12: (NULL) -1
-Sending to fd 15: (NULL) -1
-Node 5 received message from fd 12 [15] (rejected/done): (NULL) -1
-Node 5 received message from fd 15 [25] (parent): (NULL) -1
-Node 5 sending message DONE 6 to master thread.
-Node 5 received message from fd 14: TICK 7
-Sending to fd 12: (NULL) -1
-Sending to fd 15: (NULL) -1
-Node 5 received message from fd 12 [15] (rejected/done): (NULL) -1
-Node 5 received message from fd 15 [25] (parent): (NULL) -1
-Node 5 sending message DONE 7 to master thread.
+Begin of round 1
+--  Sending to fd 12: EXPLORE 5
+--  Sending to fd 16: EXPLORE 5
+--  Node 5 received message from fd 12 [-1] pending: EXPLORE 15
+End of round 1
+Begin of round 2
+--  Sending to fd 12: (NULL) -1
+--  Sending to fd 16: EXPLORE 15
+--  Node 5 received message from fd 12 [15] (parent): (NULL) -1
+--  Node 5 received message from fd 16 [-1] pending: EXPLORE 25
+End of round 2
+Begin of round 3
+--  Sending to fd 12: EXPLORE 25
+--  Sending to fd 16: (NULL) -1
+--  Node 5 received message from fd 12 [15] pending: (NULL) -1
+--  Node 5 received message from fd 16 [25] (parent): (NULL) -1
+End of round 3
+Begin of round 4
+--  Sending to fd 12: (NULL) -1
+--  Sending to fd 16: (NULL) -1
+--  Node 5 received message from fd 12 [15] pending: REJECT -1
+--  Node 5 received message from fd 16 [25] (parent): (NULL) -1
+End of round 4
+Begin of round 5
+--  Sending to fd 12: (NULL) -1
+--  Sending to fd 16: DONE -1
+--  Node 5 received message from fd 16 [25] (parent): (NULL) -1
+End of round 5
+Begin of round 6
+--  Sending to fd 12: (NULL) -1
+--  Sending to fd 16: (NULL) -1
+--  Node 5 received message from fd 12 [15] (rejected/done): (NULL) -1
+--  Node 5 received message from fd 16 [25] (parent): (NULL) -1
+End of round 6
+Begin of round 7
+--  Sending to fd 12: (NULL) -1
+--  Sending to fd 16: (NULL) -1
+--  Node 5 received message from fd 12 [15] (rejected/done): (NULL) -1
+--  Node 5 received message from fd 16 [25] (parent): (NULL) -1
+End of round 7
+Begin of round 8
+--  Sending to fd 12: (NULL) -1
+--  Sending to fd 16: (NULL) -1
+--  Node 5 received message from fd 12 [15] (rejected/done): (NULL) -1
+--  Node 5 received message from fd 16 [25] (parent): LEADER 25
+Node 5 terminating...
+    Leader elected = 25
+    My parent = 25
+    My children = 
+Sending LEADER 25 to 12 [15]
+Sending LEADER 25 to 16 [25]
+Sending LEADER 25 to master thread.

@@ -1,43 +1,41 @@
 Starting node 25
-Node 25 received message from fd 18: TICK 1
-Sending to fd 8: EXPLORE 25
-Sending to fd 16: EXPLORE 25
-Node 25 received message from fd 8 [-1] pending: EXPLORE 10
-Node 25 received message from fd 16 [-1] pending: EXPLORE 5
-Node 25 sending message DONE 1 to master thread.
-Node 25 received message from fd 18: TICK 2
-Sending to fd 8: (NULL) -1
-Sending to fd 16: (NULL) -1
-Node 25 received message from fd 8 [10] pending: (NULL) -1
-Node 25 received message from fd 16 [5] pending: (NULL) -1
-Node 25 sending message DONE 2 to master thread.
-Node 25 received message from fd 18: TICK 3
-Sending to fd 8: (NULL) -1
-Sending to fd 16: (NULL) -1
-Node 25 received message from fd 8 [10] pending: (NULL) -1
-Node 25 received message from fd 16 [5] pending: (NULL) -1
-Node 25 sending message DONE 3 to master thread.
-Node 25 received message from fd 18: TICK 4
-Sending to fd 8: (NULL) -1
-Sending to fd 16: (NULL) -1
-Node 25 received message from fd 8 [10] pending: (NULL) -1
-Node 25 received message from fd 16 [5] pending: DONE -1
-Node 25 sending message DONE 4 to master thread.
-Node 25 received message from fd 18: TICK 5
-Sending to fd 8: (NULL) -1
-Sending to fd 16: (NULL) -1
-Node 25 received message from fd 8 [10] pending: (NULL) -1
-Node 25 received message from fd 16 [5] (child/done): (NULL) -1
-Node 25 sending message DONE 5 to master thread.
-Node 25 received message from fd 18: TICK 6
-Sending to fd 8: (NULL) -1
-Sending to fd 16: (NULL) -1
-Node 25 received message from fd 8 [10] pending: (NULL) -1
-Node 25 received message from fd 16 [5] (child/done): (NULL) -1
-Node 25 sending message DONE 6 to master thread.
-Node 25 received message from fd 18: TICK 7
-Sending to fd 8: (NULL) -1
-Sending to fd 16: (NULL) -1
-Node 25 received message from fd 8 [10] pending: (NULL) -1
-Node 25 received message from fd 16 [5] (child/done): (NULL) -1
-Node 25 sending message DONE 7 to master thread.
+Begin of round 1
+--  Sending to fd 8: EXPLORE 25
+--  Sending to fd 17: EXPLORE 25
+--  Node 25 received message from fd 8 [-1] pending: EXPLORE 10
+--  Node 25 received message from fd 17 [-1] pending: EXPLORE 5
+End of round 1
+Begin of round 2
+--  Sending to fd 8: (NULL) -1
+--  Sending to fd 17: (NULL) -1
+--  Node 25 received message from fd 8 [10] pending: EXPLORE 15
+--  Node 25 received message from fd 17 [5] pending: EXPLORE 15
+End of round 2
+Begin of round 3
+--  Sending to fd 8: (NULL) -1
+--  Sending to fd 17: (NULL) -1
+--  Node 25 received message from fd 8 [10] pending: (NULL) -1
+End of round 3
+Begin of round 4
+--  Sending to fd 8: (NULL) -1
+--  Sending to fd 17: (NULL) -1
+--  Node 25 received message from fd 17 [5] pending: (NULL) -1
+End of round 4
+Begin of round 5
+--  Sending to fd 8: (NULL) -1
+--  Sending to fd 17: (NULL) -1
+--  Node 25 received message from fd 8 [10] pending: (NULL) -1
+--  Node 25 received message from fd 17 [5] pending: (NULL) -1
+End of round 5
+Begin of round 6
+--  Sending to fd 8: (NULL) -1
+--  Sending to fd 17: (NULL) -1
+--  Node 25 received message from fd 8 [10] pending: DONE -1
+--  Node 25 received message from fd 17 [5] pending: DONE -1
+Node 25 terminating...
+    Leader elected = 25
+    Woohoo!! I'm the leader!
+    My children = 10 5 
+Sending LEADER 25 to 8 [10]
+Sending LEADER 25 to 17 [5]
+Sending LEADER 25 to master thread.

@@ -15,6 +15,8 @@
 #include <fstream>
 #include <stdexcept>
 
+#include <sys/select.h>
+
 #include "CS6380Project1.h"
 
 using namespace std;
@@ -59,24 +61,38 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
     while (!done) {
         round++;
         
+        fd_set neighborSet;
+        int maxFd=0;
+
         // Wait for the next "TICK"
         Message msg(master_fd);
 
-        fout << "Node " << node_id << " received message from fd " << master_fd <<
-                ": " << msg.toString() << endl;
+        fout << "Begin of round " << msg.id << endl << flush;
 
         // Send messages to all my neighbors
         for( unsigned i=0; i<neighbor_fds.size(); i++ ) {
-        	fout << "Sending to fd " << neighbor_fds[i] << ": " <<
+ // Tried eliminating the NULL messages, but this broke everything...
+ //       	if ( toSend[i].msgType == Message::MSG_NULL ) continue;
+
+        	fout << "--  Sending to fd " << neighbor_fds[i] << ": " <<
         		 toSend[i].toString() << endl;
         	toSend[i].send( neighbor_fds[i] );
+
+        	FD_SET( neighbor_fds[i], &neighborSet );
+        	if ( maxFd < neighbor_fds[i] ) maxFd = neighbor_fds[i];
         }
 
         // By default everyone gets a NULL message
         std::fill( toSend.begin(), toSend.end(), Message{Message::MSG_NULL} );
 
+        struct timeval timeout = { 0, 0 };
+        // Use select() to figure out who has actually sent us a message...
+        select( maxFd+1, &neighborSet, nullptr, nullptr, &timeout );
+
         // Receive messages and process...
         for( unsigned i=0; i<neighbor_fds.size(); i++ ) {
+        	if ( !FD_ISSET( neighbor_fds[i], &neighborSet ) ) continue;
+
         	Message msg( neighbor_fds[i] );
         	int receivedId;
 
@@ -87,7 +103,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                 else pcd = "(rejected/done)";
             } else pcd = "pending";
 
-            fout << "Node " << node_id <<
+            fout << "--  Node " << node_id <<
             	    " received message from fd " << neighbor_fds[i] << 
                     " [" << neighborIds[i] << "] " << pcd << ": " << msg.toString() << endl << flush;
             bool allDone = true;
@@ -115,6 +131,17 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                     	// If we get maxId from another source, let him know
                     	// he's not our parent...
                     	toSend[i] = Message{Message::MSG_REJECT};
+                        isDone[i] = true;
+                        allDone = true;
+                        for( unsigned j=0; j<isDone.size(); j++ ) {
+                        	if ( j == parent ) continue;
+//                        	fout << "Rejecting... node " << j << " is " <<
+//                        			(!isDone[j] ? "not " : "") << "done." << endl;
+                        	allDone = allDone && isDone[j];
+                        }
+                        if ( allDone ) {
+                        	toSend[parent] = Message{Message::MSG_DONE};
+                        }
                     } // else -- we don't need to worry about if we got
                       // an EXPLORE smaller than our maxId.
                       // since we're going to send a new EXPLORE out within
@@ -162,10 +189,11 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
             }
         }
         
-        Message done(Message::MSG_DONE, round);
-        fout << "Node " << node_id << " sending message " << done.toString() 
-             << " to master thread." << endl;
-        done.send(master_fd);
+        if ( !done ) {
+            Message doneMsg(Message::MSG_DONE, round);
+            fout << "End of round " << round << endl << flush;
+            doneMsg.send(master_fd);
+        }
     }
 
     // If we get here, we're done.  Wootwoot!
@@ -181,13 +209,17 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
     }
     os << endl;
     cout << os.str();
+    fout << os.str();
 
     // Propagate the LEADER message down the tree...
     Message msg{ Message::MSG_LEADER, maxId };
     for( unsigned j=0; j<isDone.size(); j++ ) {
         if ( isChild[j] ) msg.send( neighbor_fds[j] );
+        fout << "Sending " << msg.toString() << " to " << neighbor_fds[j] <<
+        		" [" << neighborIds[j] << "]" << endl << flush;
     }
     
     // Let the Master thread know we're done and to stop listening to us.
+    fout << "Sending " << msg.toString() << " to master thread." << endl;
     msg.send( master_fd );
 }
