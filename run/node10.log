@@ -5,60 +5,48 @@ Begin of round 1
 --  Sending to fd 9: EXPLORE 10
 --  Sending to fd 11: EXPLORE 10
 --  Sending to fd 13: EXPLORE 10
---  Sending to fd 15: EXPLORE 10
---  Sending to fd 17: EXPLORE 10
---  Sending to fd 19: EXPLORE 10
---  Sending to fd 21: EXPLORE 10
 --  Node 10 received message from fd 5 [-1] pending: EXPLORE 15
---  Node 10 received message from fd 7 [-1] pending: EXPLORE 5
---  Node 10 received message from fd 9 [-1] pending: EXPLORE 25
---  Node 10 received message from fd 11 [-1] pending: EXPLORE 30
---  Node 10 received message from fd 13 [-1] pending: EXPLORE 33
---  Node 10 received message from fd 15 [-1] pending: EXPLORE 28
---  Node 10 received message from fd 17 [-1] pending: EXPLORE 5
---  Node 10 received message from fd 19 [-1] pending: EXPLORE 3
---  Node 10 received message from fd 21 [-1] pending: EXPLORE 50
+--  Node 10 received message from fd 7 [-1] pending: EXPLORE 25
+--  Node 10 received message from fd 9 [-1] pending: EXPLORE 33
+--  Node 10 received message from fd 11 [-1] pending: EXPLORE 4
+--  Node 10 received message from fd 13 [-1] pending: EXPLORE 50
 End of round 1
 Begin of round 2
 --  Sending to fd 5: EXPLORE 50
 --  Sending to fd 7: EXPLORE 50
 --  Sending to fd 9: EXPLORE 50
 --  Sending to fd 11: EXPLORE 50
---  Sending to fd 13: EXPLORE 50
---  Sending to fd 15: EXPLORE 50
---  Sending to fd 17: EXPLORE 50
---  Sending to fd 19: EXPLORE 50
---  Sending to fd 21: (NULL) -1
---  Node 10 received message from fd 5 [15] pending: EXPLORE 50
---  Node 10 received message from fd 7 [5] pending: EXPLORE 50
---  Node 10 received message from fd 9 [25] pending: EXPLORE 50
---  Node 10 received message from fd 11 [30] pending: EXPLORE 50
---  Node 10 received message from fd 13 [33] pending: EXPLORE 50
---  Node 10 received message from fd 15 [28] pending: EXPLORE 50
---  Node 10 received message from fd 17 [5] pending: EXPLORE 50
---  Node 10 received message from fd 19 [3] pending: EXPLORE 50
---  Node 10 received message from fd 21 [50] (parent): (NULL) -1
+--  Sending to fd 13: (NULL) -1
+--  Node 10 received message from fd 5 [15] pending: EXPLORE 30
+--  Node 10 received message from fd 7 [25] pending: EXPLORE 30
+--  Node 10 received message from fd 9 [33] pending: (NULL) -1
+--  Node 10 received message from fd 11 [4] pending: EXPLORE 30
+--  Node 10 received message from fd 13 [50] (parent): (NULL) -1
 End of round 2
 Begin of round 3
---  Sending to fd 5: REJECT -1
---  Sending to fd 7: REJECT -1
---  Sending to fd 9: REJECT -1
---  Sending to fd 11: REJECT -1
---  Sending to fd 13: REJECT -1
---  Sending to fd 15: REJECT -1
---  Sending to fd 17: REJECT -1
---  Sending to fd 19: REJECT -1
---  Sending to fd 21: DONE -1
---  Node 10 received message from fd 5 [15] (rejected/done): REJECT -1
---  Node 10 received message from fd 7 [5] (rejected/done): REJECT -1
---  Node 10 received message from fd 9 [25] (rejected/done): REJECT -1
---  Node 10 received message from fd 11 [30] (rejected/done): REJECT -1
---  Node 10 received message from fd 13 [33] (rejected/done): REJECT -1
---  Node 10 received message from fd 15 [28] (rejected/done): REJECT -1
---  Node 10 received message from fd 17 [5] (rejected/done): REJECT -1
---  Node 10 received message from fd 19 [3] (rejected/done): REJECT -1
---  Node 10 received message from fd 21 [50] (parent): (NULL) -1
+--  Sending to fd 5: (NULL) -1
+--  Sending to fd 7: (NULL) -1
+--  Sending to fd 9: (NULL) -1
+--  Sending to fd 11: (NULL) -1
+--  Sending to fd 13: (NULL) -1
+--  Node 10 received message from fd 5 [15] pending: DONE -1
+--  Node 10 received message from fd 7 [25] pending: DONE -1
+--  Node 10 received message from fd 9 [33] pending: DONE -1
+--  Node 10 received message from fd 11 [4] pending: DONE -1
+--  Node 10 received message from fd 13 [50] (parent): (NULL) -1
 End of round 3
+Begin of round 4
+--  Sending to fd 5: (NULL) -1
+--  Sending to fd 7: (NULL) -1
+--  Sending to fd 9: (NULL) -1
+--  Sending to fd 11: (NULL) -1
+--  Sending to fd 13: DONE -1
+--  Node 10 received message from fd 5 [15] (child/done): (NULL) -1
+--  Node 10 received message from fd 7 [25] (child/done): (NULL) -1
+--  Node 10 received message from fd 9 [33] (child/done): (NULL) -1
+--  Node 10 received message from fd 11 [4] (child/done): (NULL) -1
+--  Node 10 received message from fd 13 [50] (parent): (NULL) -1
+End of round 4
 Node 10 terminating...
     parent: 50
-    children: 
+    children: 15 25 33 4 
