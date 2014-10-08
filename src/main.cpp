@@ -35,8 +35,6 @@ using namespace std;
 
 bool verbose=false;
 
-fstream results;
-
 int main( int argc, char** argv ) {
 	int numNodes;
 	vector<vector<bool>> neighbors;
@@ -167,9 +165,7 @@ int main( int argc, char** argv ) {
 
     cout << "got LEADER(" << leader << ")" << endl;
 
-    results.open( "results.log", fstream::in | fstream::out | fstream::trunc );
-
-    queue<int> bfsQ;
+    queue<int, list<int>> bfsQ;
     bfsQ.push( leader );
     Message leaderMsg{ Message::MSG_LEADER, leader };
     string ignore;
@@ -178,46 +174,29 @@ int main( int argc, char** argv ) {
 
     	verbose && cout << "Popped node " << node << " from queue..." << endl;
     	bfsQ.pop();
+    	verbose && cout << "Queue length = " << bfsQ.size() << endl;
     	int i=0;
+    	verbose && cout << "Queue length = " << bfsQ.size() << endl;
     	while( nodeIds[i] != node && i < nodeIds.size() ) i++;
     	verbose && cout << "Node " << node << " is number " << i << endl;
 
     	int fd = master_fds[i];
-    	verbose && cout << "Sending " << leaderMsg.toString() << " to file descriptor " << fd << endl;
+    	verbose && cout << "Sending " << leaderMsg.toString() << " to node " << node << "[" << fd << "]" << endl;
     	leaderMsg.send( fd );
     	Message done( fd );
 
-    	results.seekg( -2, fstream::end ); // seek get to EOF.
-    	results.seekp( 0, fstream::end ); // seek put to EOF.
-    	results.clear();
+    	ifstream children("children.txt");
 
-    	streampos pos=results.tellg() - 2;
-    	char c;
-        for(int i = pos-2; i > 0; i-- )
-        {
-            results.seekg(i);
-            c = results.get();
-            if( c == '\r' || c == '\n' )//new line?
-                 break;
-        }
-
-//    	cout << "Currently at position " << results.tellg() << endl;
-    	results.clear();
-
-    	while( results.peek() != '\n' ) results.seekg( -1, fstream::cur );
-//    	cout << "Currently at position " << results.tellg() << endl;
-        results.seekg( 1, fstream::cur );
-        results >> ignore;
-//        cout << "Ignoring: " << ignore;
-
-        while( !results.eof() ) {
-        	results >> node;
-        	if ( !results.eof() ) {
-//        		cout << "Got node " << node << endl;
+        do {
+        	children >> node;
+        	if ( node != 0 ) {
+        		verbose && cout << "Adding node " << node << endl;
         		bfsQ.push( node );
         	}
-        }
-        results.clear();
+        } while( node != 0 );
+        children.close();
+
+        unlink( "children.txt" );
     }
 
     for( auto thread : threads ) {

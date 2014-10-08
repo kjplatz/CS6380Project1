@@ -46,5 +46,4 @@ extern bool verbose;
 
 #include "Message.h"
 
-extern std::fstream results;
 #endif /* CS6380PROJECT1_H_ */

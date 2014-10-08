@@ -8,6 +8,7 @@
  *      Brian Snedic
  */
 
+#include <cstring>
 #include <vector>
 #include <iostream>
 #include <string>
@@ -77,15 +78,21 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
             if ( parent != -1 ) os << "    parent: " << neighborIds[parent] << endl;
             else                os << "    Woohoo!! I'm the leader!" << endl;
             os << "    children: ";
+
+            ofstream children("children.txt");
+
             for( int i=0; i<numNbrs; i++ ) {
-                if ( isChild[i] ) os << neighborIds[i] << " ";
+                if ( isChild[i] ) {
+                	os << neighborIds[i] << " ";
+                    children << neighborIds[i] << " ";
+                }
             }
+            children << 0 << endl << flush;
+            children.close();
+
             os << endl;
             cout << os.str();
             fout << os.str();
-            results.clear();
-            results.seekp( 0, fstream::end );
-            results << os.str() << flush;
 
             Message done{Message::MSG_DONE};
             done.send( master_fd );
