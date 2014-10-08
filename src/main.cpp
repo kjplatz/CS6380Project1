@@ -138,9 +138,7 @@ int main( int argc, char** argv ) {
     	int doneCount=0;
     	// Read a message from each process file descriptor... this will either be a
     	// LEADER message or a DONE message.
-    	for( int i=0; i<master_fds.size(); i++ ) {
-    		int id;
-
+    	for( unsigned i=0; i<master_fds.size(); i++ ) {
     		// Get the message and parse it...
     		Message msg( master_fds[i] );
 
@@ -175,7 +173,7 @@ int main( int argc, char** argv ) {
     	verbose && cout << "Popped node " << node << " from queue..." << endl;
     	bfsQ.pop();
     	verbose && cout << "Queue length = " << bfsQ.size() << endl;
-    	int i=0;
+    	unsigned i=0;
     	verbose && cout << "Queue length = " << bfsQ.size() << endl;
     	while( nodeIds[i] != node && i < nodeIds.size() ) i++;
     	verbose && cout << "Node " << node << " is number " << i << endl;
