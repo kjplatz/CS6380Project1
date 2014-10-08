@@ -8,10 +8,14 @@
  *      Brian Snedic
  */
 
+#include <algorithm>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <iostream>
+#include <list>
+#include <queue>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -29,6 +33,10 @@
 
 using namespace std;
 
+bool verbose=false;
+
+fstream results;
+
 int main( int argc, char** argv ) {
 	int numNodes;
 	vector<vector<bool>> neighbors;
@@ -41,6 +49,8 @@ int main( int argc, char** argv ) {
 
 	string cfg_file{ argv[1] };
 	numNodes = parse_config( cfg_file, nodeIds, neighbors );
+
+	if ( argc > 2 && string{argv[2]} == string{"verbose"} ) verbose = true;
 
         cout << "Processed " << numNodes << " nodes." << endl;
         for( int i=0; i<numNodes; i++ ) {
@@ -73,10 +83,10 @@ int main( int argc, char** argv ) {
     	// File descriptor we'll talk to our master on...
     	int master_fd = sockpair[1];
 
-//    	cout << "Thread " << i << " has socketpair " << sockpair[0] << ", " << sockpair[1] << endl;
+     	verbose && cout << "Thread " << i << " has socketpair " << sockpair[0] << ", " << sockpair[1] << endl;
 
     	for( int j=0; j<numNodes; j++ ) {
-    		if ( i == j ) continue;
+    		if ( i == j ) continue;   // A node can't be its own neighbor...
     		if ( neighbors[i][j] ) {
 
     			// Note, we are using socketpair() here.  A (successful) call to
@@ -96,6 +106,9 @@ int main( int argc, char** argv ) {
     			neighbor_fds[i].push_back( sockpair[0] );
     			neighbor_fds[j].push_back( sockpair[1] );
 
+    			verbose && cout << "Creating socketpair [" << sockpair[0] << ", " << sockpair[1] << "] for nodes "
+    					        << i << " <-> " << j << endl;
+
     			// Set neighbors[j][i] to false so we don't create duplicate channels.
     			neighbors[j][i] = false;
     		}
@@ -108,8 +121,8 @@ int main( int argc, char** argv ) {
 
     int round=0;
 
-    int leader;
-    while( master_fds.size() > 0 ) {
+    int leader = -1;
+    while( leader < 0 ) {
     	round++;
     	sleep(1);
 
@@ -132,12 +145,11 @@ int main( int argc, char** argv ) {
 
     		// Get the message and parse it...
     		Message msg( master_fds[i] );
-    		id=msg.id;
 
     	  	switch( msg.msgType ) {
     	 	case Message::MSG_LEADER:  // I know who the leader is.  Ignore me from here on out
     	 		cout << "Got message from fd " << master_fds[i] << ": " << msg.toString() << endl;
-    		    master_fds.erase( master_fds.begin() + i );
+    	 		leader = msg.id;
     		    break;
     		// fall through
     		case Message::MSG_DONE:    // I don't know, but I'm done with this round.
@@ -153,8 +165,63 @@ int main( int argc, char** argv ) {
     	cout << "Received DONE from " << doneCount << " threads." << endl;
     }
 
+    cout << "got LEADER(" << leader << ")" << endl;
+
+    results.open( "results.log", fstream::in | fstream::out | fstream::trunc );
+
+    queue<int> bfsQ;
+    bfsQ.push( leader );
+    Message leaderMsg{ Message::MSG_LEADER, leader };
+    string ignore;
+    while( !bfsQ.empty() ) {
+    	int node = bfsQ.front();
+
+    	verbose && cout << "Popped node " << node << " from queue..." << endl;
+    	bfsQ.pop();
+    	int i=0;
+    	while( nodeIds[i] != node && i < nodeIds.size() ) i++;
+    	verbose && cout << "Node " << node << " is number " << i << endl;
+
+    	int fd = master_fds[i];
+    	verbose && cout << "Sending " << leaderMsg.toString() << " to file descriptor " << fd << endl;
+    	leaderMsg.send( fd );
+    	Message done( fd );
+
+    	results.seekg( -2, fstream::end ); // seek get to EOF.
+    	results.seekp( 0, fstream::end ); // seek put to EOF.
+    	results.clear();
+
+    	streampos pos=results.tellg() - 2;
+    	char c;
+        for(int i = pos-2; i > 0; i-- )
+        {
+            results.seekg(i);
+            c = results.get();
+            if( c == '\r' || c == '\n' )//new line?
+                 break;
+        }
+
+//    	cout << "Currently at position " << results.tellg() << endl;
+    	results.clear();
+
+    	while( results.peek() != '\n' ) results.seekg( -1, fstream::cur );
+//    	cout << "Currently at position " << results.tellg() << endl;
+        results.seekg( 1, fstream::cur );
+        results >> ignore;
+//        cout << "Ignoring: " << ignore;
+
+        while( !results.eof() ) {
+        	results >> node;
+        	if ( !results.eof() ) {
+//        		cout << "Got node " << node << endl;
+        		bfsQ.push( node );
+        	}
+        }
+        results.clear();
+    }
+
     for( auto thread : threads ) {
-    	thread->join();
+    	thread->detach();
     }
     
     cout << "All threads terminated... exiting" << endl;

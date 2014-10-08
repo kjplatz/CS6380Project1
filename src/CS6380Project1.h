@@ -42,6 +42,9 @@ int parse_config( std::string cfg_file,
 //    neighbor_fds: The socket file descriptors of my neighbors
 void run_node( int node_id, int master_fd,  std::vector<int> neighbor_fds );
 
+extern bool verbose;
+
 #include "Message.h"
 
+extern std::fstream results;
 #endif /* CS6380PROJECT1_H_ */
