@@ -160,9 +160,6 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                         			(!isDone[j] ? "not " : "") << "done." << endl;
                         	allDone = allDone && isDone[j];
                         }
-                        if ( allDone ) {
-                        	toSend[parent] = Message{Message::MSG_DONE};
-                        }
                     } else if ( receivedId == maxId ) {
                     	// If we get maxId from another source, let him know
                     	// he's not our parent...
@@ -175,10 +172,10 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                         			(!isDone[j] ? "not " : "") << "done." << endl;
                         	allDone = allDone && isDone[j];
                         }
-                        if ( allDone ) {
-                        	toSend[parent] = Message{Message::MSG_DONE};
-                        }
                     } // else -- we don't need to worry about if we got
+                    if ( allDone ) {
+                       	toSend[parent] = Message{Message::MSG_DONE};
+                    }
                       // an EXPLORE smaller than our maxId.
                       // since we're going to send a new EXPLORE out within
                       // the next round.
