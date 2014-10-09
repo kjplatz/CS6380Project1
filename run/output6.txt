@@ -1,0 +1,97 @@
+Processed 15 nodes.
+Node 0 has ID: 3
+    -- Neighbors: 3 21 24 
+Node 1 has ID: 6
+    -- Neighbors: 6 9 21 
+Node 2 has ID: 9
+    -- Neighbors: 6 9 12 21 
+Node 3 has ID: 12
+    -- Neighbors: 9 12 15 45 
+Node 4 has ID: 15
+    -- Neighbors: 12 15 18 30 42 45 
+Node 5 has ID: 18
+    -- Neighbors: 15 18 21 27 36 
+Node 6 has ID: 21
+    -- Neighbors: 3 6 9 18 21 24 
+Node 7 has ID: 24
+    -- Neighbors: 3 21 24 33 36 
+Node 8 has ID: 27
+    -- Neighbors: 18 27 30 36 39 
+Node 9 has ID: 30
+    -- Neighbors: 15 27 30 39 42 
+Node 10 has ID: 33
+    -- Neighbors: 24 33 
+Node 11 has ID: 36
+    -- Neighbors: 18 24 27 36 39 
+Node 12 has ID: 39
+    -- Neighbors: 27 30 36 39 42 
+Node 13 has ID: 42
+    -- Neighbors: 15 30 42 45 
+Node 14 has ID: 45
+    -- Neighbors: 12 15 42 45 
+Sending to 15 threads: TICK 1
+Received DONE from 15 threads.
+Sending to 15 threads: TICK 2
+Received DONE from 15 threads.
+Sending to 15 threads: TICK 3
+Received DONE from 15 threads.
+Sending to 15 threads: TICK 4
+Received DONE from 15 threads.
+Sending to 15 threads: TICK 5
+Received DONE from 15 threads.
+Sending to 15 threads: TICK 6
+Received DONE from 15 threads.
+Sending to 15 threads: TICK 7
+Received DONE from 15 threads.
+Sending to 15 threads: TICK 8
+Received DONE from 15 threads.
+Sending to 15 threads: TICK 9
+Got message from fd 96: LEADER 45
+Received DONE from 14 threads.
+got LEADER(45)
+Node 45 terminating...
+    Woohoo!! I'm the leader!
+    children: 12 15 42 
+Node 12 terminating...
+    parent: 45
+    children: 9 
+Node 15 terminating...
+    parent: 45
+    children: 18 30 
+Node 42 terminating...
+    parent: 45
+    children: 39 
+Node 9 terminating...
+    parent: 12
+    children: 6 21 
+Node 18 terminating...
+    parent: 15
+    children: 27 36 
+Node 30 terminating...
+    parent: 15
+    children: 
+Node 39 terminating...
+    parent: 42
+    children: 
+Node 6 terminating...
+    parent: 9
+    children: 
+Node 21 terminating...
+    parent: 9
+    children: 3 24 
+Node 27 terminating...
+    parent: 18
+    children: 
+Node 36 terminating...
+    parent: 18
+    children: 
+Node 3 terminating...
+    parent: 21
+    children: 
+Node 24 terminating...
+    parent: 21
+    children: 33 
+Node 33 terminating...
+    parent: 24
+    children: 
+All threads terminated... exiting
