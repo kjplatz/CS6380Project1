@@ -12,19 +12,25 @@
 #define MESSAGE_H_
 
 #include <string>
+#include <vector>
 
 class Message {
-	char buf[1024];
 	int rcvd;
+	std::vector<int> children;
 public:
 	enum MsgType {  MSG_NULL=0, MSG_TICK, MSG_DONE, MSG_EXPLORE,
-		           MSG_REJECT, MSG_LEADER } msgType;
+		           MSG_REJECT, MSG_LEADER, MSG_CHILDREN } msgType;
+
+    void addChild( int c ) { children.push_back( c ); };
 	int  id;
 	// Read a message from a file descriptor
 	Message() = delete;
 	Message( const Message& ) = default;
 	Message( Message&& );
 	Message( int fd );
+	Message( MsgType, const std::vector<int> );
+
+	std::vector<int>& getChildren() { return children; }
 
 	Message& operator=( const Message& m ) = default;
 

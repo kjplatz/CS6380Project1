@@ -156,8 +156,6 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                         allDone = true;
                         for( unsigned j=0; j<isDone.size(); j++ ) {
                         	if ( (int)j == parent ) continue;
-                        	verbose && fout << "Rejecting... node " << j << " is " <<
-                        			(!isDone[j] ? "not " : "") << "done." << endl;
                         	allDone = allDone && isDone[j];
                         }
                     } else if ( receivedId == maxId ) {
@@ -168,8 +166,6 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                         allDone = true;
                         for( unsigned j=0; j<isDone.size(); j++ ) {
                         	if ( (int)j == parent ) continue;
-                        	verbose && fout << "Rejecting... node " << j << " is " <<
-                        			(!isDone[j] ? "not " : "") << "done." << endl;
                         	allDone = allDone && isDone[j];
                         }
                     } // else -- we don't need to worry about if we got

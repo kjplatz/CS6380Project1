@@ -10,6 +10,7 @@
 
 #include "CS6380Project1.h"
 #include "Message.h"
+#include <algorithm>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/sctp.h>
@@ -29,7 +30,8 @@ Message::Message( Message&& m ) : msgType( m.msgType ), id(m.id) {
 
 // Read a message from file descriptor <fd>
 
-Message::Message( int fd ) {
+Message::Message( int fd ) : children{0} {
+	char buf[1024];
     memset( buf, sizeof(buf), 0 );
 
     if ( (rcvd = recvfrom( fd, buf, 1023, 0, nullptr, nullptr )) < 0 ) {
@@ -49,7 +51,18 @@ Message::Message( int fd ) {
 	else if ( type == string{"EXPLORE"}) msgType = MSG_EXPLORE;
 	else if ( type == string{"REJECT"}) msgType = MSG_REJECT;
 	else if ( type == string{"LEADER"}) msgType = MSG_LEADER;
-	else msgType = MSG_NULL;
+	else if ( type == string{"CHILDREN"}) {
+        msgType = MSG_CHILDREN;
+        int child;
+        is >> child;
+        while( child != 0 ) {
+        	children.push_back( child );
+        }
+        std::sort( children.begin(), children.end() );
+	}
+	is >> id;
+	if ( is.eof() ) id = -1;
+
 }
 
 int Message::send(int fd) {
@@ -67,6 +80,13 @@ string Message::toString() const {
 	case MSG_REJECT : str = "REJECT"; break;
 	case MSG_LEADER : str = "LEADER"; break;
 	case MSG_NULL : str = "(NULL)"; break;
+	case MSG_CHILDREN :
+		str = "CHILDREN ";
+		for( auto it : children ) {
+			str = str + to_string(it) + string{' '};
+		}
+		str += to_string(0);
+		break;
 	}
 
 	str += string{ ' ' } + to_string( id );
