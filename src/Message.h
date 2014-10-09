@@ -13,6 +13,11 @@
 
 #include <string>
 
+/*
+ * class Message:
+ *     This creates an abstraction of a Message that can be sent and
+ *     received between peers or between a child and the master.
+ */
 class Message {
 	char buf[1024];
 	int rcvd;

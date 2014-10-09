@@ -61,10 +61,6 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
     vector<Message> toSend( numNbrs, Message{ Message::MSG_EXPLORE, node_id});
     while (true) {
         round++;
-        
-        fd_set neighborSet;
-        int maxFd=0;
-
         // Wait for the next "TICK"
         Message msg(master_fd);
 
@@ -104,20 +100,14 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
 
         // Send messages to all my neighbors
         for( unsigned i=0; i<neighbor_fds.size(); i++ ) {
-        	fout << "--  Sending to fd " << neighbor_fds[i] << ": " <<
+        	fout << "--  Sending to node " << neighborIds[i] <<
+        			"[fd " << neighbor_fds[i] << "]: " <<
         		 toSend[i].toString() << endl;
         	toSend[i].send( neighbor_fds[i] );
-
-        	FD_SET( neighbor_fds[i], &neighborSet );
-        	if ( maxFd < neighbor_fds[i] ) maxFd = neighbor_fds[i];
         }
 
         // By default everyone gets a NULL message
         std::fill( toSend.begin(), toSend.end(), Message{Message::MSG_NULL} );
-
-        struct timeval timeout = { 0, 0 };
-        // Use select() to figure out who has actually sent us a message...
-        select( maxFd+1, &neighborSet, nullptr, nullptr, &timeout );
 
         // Receive messages and process...
         for( unsigned i=0; i<neighbor_fds.size(); i++ ) {
@@ -132,8 +122,8 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
             } else pcd = "pending";
 
             fout << "--  Node " << node_id <<
-            	    " received message from fd " << neighbor_fds[i] << 
-                    " [" << neighborIds[i] << "] " << pcd << ": " << msg.toString() << endl << flush;
+            	    " received message from node " << neighborIds[i] <<
+                    " [" << neighbor_fds[i] << "] " << pcd << ": " << msg.toString() << endl << flush;
             bool allDone = false;
 
             switch (msg.msgType) {
@@ -148,16 +138,18 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                     {
                     	parent = i;
                         maxId = receivedId;
+                        // New parent -- any DONE or REJECT messages
+                        // we've received are no longer any good.
                         std::fill( isDone.begin(), isDone.end(), false );
                         std::fill( isChild.begin(), isChild.end(), false );
                         // Forward this ID on to all neighbors (but the parent)
                         std::fill( toSend.begin(), toSend.end(), msg );
                         toSend[parent] = Message::MSG_NULL;
+
+                        // Is everyone done now?
                         allDone = true;
                         for( unsigned j=0; j<isDone.size(); j++ ) {
                         	if ( (int)j == parent ) continue;
-                        	verbose && fout << "Rejecting... node " << j << " is " <<
-                        			(!isDone[j] ? "not " : "") << "done." << endl;
                         	allDone = allDone && isDone[j];
                         }
                     } else if ( receivedId == maxId ) {
@@ -165,11 +157,11 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                     	// he's not our parent...
                     	toSend[i] = Message{Message::MSG_REJECT};
                         isDone[i] = true;
+
+                        // Is everyone done now?
                         allDone = true;
                         for( unsigned j=0; j<isDone.size(); j++ ) {
                         	if ( (int)j == parent ) continue;
-                        	verbose && fout << "Rejecting... node " << j << " is " <<
-                        			(!isDone[j] ? "not " : "") << "done." << endl;
                         	allDone = allDone && isDone[j];
                         }
                     } // else -- we don't need to worry about if we got
@@ -180,8 +172,11 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                       // since we're going to send a new EXPLORE out within
                       // the next round.
                     break;
+
                 case Message::MSG_REJECT:
                     isDone[i] = true;
+
+                    // is everyone done now?
                     allDone = true;
                     for( unsigned j=0; j<isDone.size(); j++ ) {
                     	if ( (int) j == parent ) continue;
@@ -191,6 +186,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                     	toSend[parent] = Message{Message::MSG_DONE};
                     }
                     break;
+
                 case Message::MSG_DONE:
                 	isDone[i] = true;
                 	isChild[i] = true;
@@ -206,11 +202,6 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                     	    toSend[parent] = Message{Message::MSG_DONE};
                         }
                     }
-                    break;
-
-                // Someone knows who the leader is.
-                case Message::MSG_LEADER:
-                    done = true;
                     break;
 
                 // Nothing to see here.  Really!

@@ -1,3 +1,10 @@
+/*
+ * parse_config.cpp
+ *     Authors:
+ *     Brian Snedic
+ *     Josh Olson
+ *     Kenneth Platz
+ */
 #include <iostream>
 #include <fstream>
 #include <vector>

@@ -8,6 +8,33 @@
  *      Brian Snedic
  */
 
+/*
+ * CS 6380 - Distributed Computing
+ * Fall 2014
+ *
+ * Programming Assignment #1
+ * This project implements the FloodMax leader election protocol
+ * in a general network.
+ *
+ * The program consists of three main portions:
+ *     The parse_config() function reads a configuration file
+ *     The main() function performs the following task:
+ *         Invokes parse_config() to determine the system configuration
+ *         Creates a set of socketpair() connections to communicate between
+ *             the master and child threads
+ *         Creates a set of socketpair() connections to simulate communications
+ *             channels between peer threads
+ *         Creates a vector of threads to simulate the processes
+ *         Runs the main control loop:
+ *             - Sends a TICK to all processes
+ *             - Waits for a DONE from all processes
+ *             - If any process sends a LEADER message, it in turn sends
+ *               that LEADER message to all processes to indicate successful
+ *               termination.
+ *
+ * We have tested this program on configurations of up to 80 nodes.
+ */
+
 #include <algorithm>
 #include <cerrno>
 #include <cstdlib>
@@ -66,6 +93,23 @@ int main( int argc, char** argv ) {
     vector<int> master_fds;
     vector<thread*> threads;
 
+    // We discovered that with a sufficiently dense graph of ~80 nodes,
+    // we would run out of file descriptors.
+    //
+    // As a result, we will just go ahead and attempt to bump up our
+    // resources to the hard limit at the beginning of the computation.
+    //
+	cout << "Attempting to request additional resources..." << flush;
+    struct rlimit lim;
+    getrlimit( RLIMIT_NOFILE, &lim );
+    lim.rlim_cur = lim.rlim_max;
+    if ( setrlimit( RLIMIT_NOFILE, &lim ) != 0 ) {
+        string err = string{ "Unable to setrlimit: " };
+    	err += strerror( errno );
+    	throw runtime_error( err );
+    }
+    cerr << " (successful)" << endl;
+
     // Set up all of the socket pairs between neighbors...
 
     int sockpair[2];
@@ -79,23 +123,7 @@ int main( int argc, char** argv ) {
     		err += strerror( errno );
     		cerr << err << endl << flush;
 
-    		// Okay, We found out (the hard way) that if we have more than ~80 nodes in our graph, we
-    		// are liable to get an EMFILE (too many open file descriptors) error.
-    		// If this happens, then go ahead and attempt to request an increase
-    		if ( errno == EMFILE ) {
-    			cerr << "Attempting to request additional resources..."  << flush;
-    	        struct rlimit lim;
-    	        getrlimit( RLIMIT_NOFILE, &lim );
-    	        lim.rlim_cur = lim.rlim_max;
-    	        if ( setrlimit( RLIMIT_NOFILE, &lim ) != 0 ) {
-    	            err = string{ "Unable to setrlimit: " };
-    	        	err += strerror( errno );
-    	        	throw runtime_error( err );
-    	        }
-    	        cerr << " (successful)" << endl;
-
-    	        if ( socketpair( AF_LOCAL, SOCK_SEQPACKET, 0, sockpair ) < 0 ) throw runtime_error( err );
-    		} else throw runtime_error( err );
+    		throw runtime_error( err );
         }
 
     	master_fds.push_back( sockpair[0] );
@@ -119,25 +147,7 @@ int main( int argc, char** argv ) {
     	    	if ( socketpair( AF_LOCAL, SOCK_SEQPACKET, 0, sockpair ) < 0 ) {
     	    		string err( "Unable to create local socket pair: " );
     	    		err += strerror( errno );
-    	    		cerr << err << endl << flush;
-
-    	    		// Okay, We found out (the hard way) that if we have more than ~80 nodes in our graph, we
-    	    		// are liable to get an EMFILE (too many open file descriptors) error.
-    	    		// If this happens, then go ahead and attempt to request an increase
-    	    		if ( errno == EMFILE ) {
-    	    			cerr << "Attempting to request additional resources..." << endl << flush;
-    	    	        struct rlimit lim;
-    	    	        getrlimit( RLIMIT_NOFILE, &lim );
-    	    	        lim.rlim_cur = lim.rlim_max;
-    	    	        if ( setrlimit( RLIMIT_NOFILE, &lim ) != 0 ) {
-    	    	            err = string{ "Unable to setrlimit: " };
-    	    	        	err += strerror( errno );
-    	    	        	throw runtime_error( err );
-    	    	        }
-    	    	        cerr << " (successful)" << endl;
-
-    	    	        if ( socketpair( AF_LOCAL, SOCK_SEQPACKET, 0, sockpair ) < 0 ) throw runtime_error( err );
-    	    		} else throw runtime_error( err );
+    	    		throw runtime_error( err );
     	        }
 
     			// Add the appropriate file descriptors to process i's and j's neighbor

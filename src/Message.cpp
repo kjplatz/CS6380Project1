@@ -21,6 +21,8 @@
 
 using namespace std;
 
+// Move constructor
+
 Message::Message( Message&& m ) : msgType( m.msgType ), id(m.id) {
 	m.msgType = MSG_NULL;
 	m.id = -1;
@@ -28,7 +30,6 @@ Message::Message( Message&& m ) : msgType( m.msgType ), id(m.id) {
 
 
 // Read a message from file descriptor <fd>
-
 Message::Message( int fd ) {
     memset( buf, sizeof(buf), 0 );
 
@@ -52,11 +53,13 @@ Message::Message( int fd ) {
 	else msgType = MSG_NULL;
 }
 
+// Send a message to a file descriptor
 int Message::send(int fd) {
 	string str = this->toString() + '\n';
 	return ::send( fd, str.c_str(), str.length(), 0 );
 }
 
+// Utility function to convert a message into a human-readable string
 string Message::toString() const {
 	string str;
 
