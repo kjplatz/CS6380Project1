@@ -153,6 +153,16 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                         // Forward this ID on to all neighbors (but the parent)
                         std::fill( toSend.begin(), toSend.end(), msg );
                         toSend[parent] = Message::MSG_NULL;
+                        allDone = true;
+                        for( unsigned j=0; j<isDone.size(); j++ ) {
+                        	if ( (int)j == parent ) continue;
+                        	verbose && fout << "Rejecting... node " << j << " is " <<
+                        			(!isDone[j] ? "not " : "") << "done." << endl;
+                        	allDone = allDone && isDone[j];
+                        }
+                        if ( allDone ) {
+                        	toSend[parent] = Message{Message::MSG_DONE};
+                        }
                     } else if ( receivedId == maxId ) {
                     	// If we get maxId from another source, let him know
                     	// he's not our parent...
