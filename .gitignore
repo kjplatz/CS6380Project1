@@ -29,3 +29,6 @@
 CS6380Project1
 /Debug/
 /run/*.log
+
+# Fucking core files
+core*
