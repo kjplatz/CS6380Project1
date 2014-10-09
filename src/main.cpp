@@ -24,7 +24,7 @@
 
 #include <unistd.h>
 
-
+#include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/sctp.h>
@@ -71,11 +71,33 @@ int main( int argc, char** argv ) {
     int sockpair[2];
 
     for( int i=0; i<numNodes; i++ ) {
+
+    	// Use local socket pairs for communications -- this simulates network communications without
+    	// having to do the listen/connect rigamarole.
     	if ( socketpair( AF_LOCAL, SOCK_SEQPACKET, 0, sockpair ) < 0 ) {
-    		ostringstream os( "Unable to create local socket pair: " );
-        	os << strerror( errno );
-        	throw runtime_error( os.str() );
+    		string err( "Unable to create local socket pair: " );
+    		err += strerror( errno );
+    		cerr << err << endl << flush;
+
+    		// Okay, We found out (the hard way) that if we have more than ~80 nodes in our graph, we
+    		// are liable to get an EMFILE (too many open file descriptors) error.
+    		// If this happens, then go ahead and attempt to request an increase
+    		if ( errno == EMFILE ) {
+    			cerr << "Attempting to request additional resources..."  << flush;
+    	        struct rlimit lim;
+    	        getrlimit( RLIMIT_NOFILE, &lim );
+    	        lim.rlim_cur = lim.rlim_max;
+    	        if ( setrlimit( RLIMIT_NOFILE, &lim ) != 0 ) {
+    	            err = string{ "Unable to setrlimit: " };
+    	        	err += strerror( errno );
+    	        	throw runtime_error( err );
+    	        }
+    	        cerr << " (successful)" << endl;
+
+    	        if ( socketpair( AF_LOCAL, SOCK_SEQPACKET, 0, sockpair ) < 0 ) throw runtime_error( err );
+    		} else throw runtime_error( err );
         }
+
     	master_fds.push_back( sockpair[0] );
 
     	// File descriptor we'll talk to our master on...
@@ -93,11 +115,30 @@ int main( int argc, char** argv ) {
     			// us to effectively model a distributed system via message-passing.
     			// These operate much like other types of sockets, except that
     			// all communications happen within the kernel.
-    			if ( socketpair( AF_LOCAL, SOCK_SEQPACKET, 0, sockpair ) < 0 ) {
-    				ostringstream os( "Unable to create local socket pair: " );
-    				os << strerror( errno );
-    				throw runtime_error( os.str() );
-    			}
+
+    	    	if ( socketpair( AF_LOCAL, SOCK_SEQPACKET, 0, sockpair ) < 0 ) {
+    	    		string err( "Unable to create local socket pair: " );
+    	    		err += strerror( errno );
+    	    		cerr << err << endl << flush;
+
+    	    		// Okay, We found out (the hard way) that if we have more than ~80 nodes in our graph, we
+    	    		// are liable to get an EMFILE (too many open file descriptors) error.
+    	    		// If this happens, then go ahead and attempt to request an increase
+    	    		if ( errno == EMFILE ) {
+    	    			cerr << "Attempting to request additional resources..." << endl << flush;
+    	    	        struct rlimit lim;
+    	    	        getrlimit( RLIMIT_NOFILE, &lim );
+    	    	        lim.rlim_cur = lim.rlim_max;
+    	    	        if ( setrlimit( RLIMIT_NOFILE, &lim ) != 0 ) {
+    	    	            err = string{ "Unable to setrlimit: " };
+    	    	        	err += strerror( errno );
+    	    	        	throw runtime_error( err );
+    	    	        }
+    	    	        cerr << " (successful)" << endl;
+
+    	    	        if ( socketpair( AF_LOCAL, SOCK_SEQPACKET, 0, sockpair ) < 0 ) throw runtime_error( err );
+    	    		} else throw runtime_error( err );
+    	        }
 
     			// Add the appropriate file descriptors to process i's and j's neighbor
     			// lists.
