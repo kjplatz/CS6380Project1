@@ -134,7 +134,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
             fout << "--  Node " << node_id <<
             	    " received message from fd " << neighbor_fds[i] << 
                     " [" << neighborIds[i] << "] " << pcd << ": " << msg.toString() << endl << flush;
-            bool allDone = true;
+            bool allDone = false;
 
             switch (msg.msgType) {
                 case Message::MSG_EXPLORE:
