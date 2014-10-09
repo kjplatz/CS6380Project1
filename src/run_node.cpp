@@ -125,7 +125,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
         	int receivedId;
 
             string pcd;
-            if ( parent == i ) pcd = "(parent)";
+            if ( parent == (int)i ) pcd = "(parent)";
             else if ( isDone[i] ) {
                 if ( isChild[i] ) pcd = "(child/done)";
                 else pcd = "(rejected/done)";
@@ -160,7 +160,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                         isDone[i] = true;
                         allDone = true;
                         for( unsigned j=0; j<isDone.size(); j++ ) {
-                        	if ( j == parent ) continue;
+                        	if ( (int)j == parent ) continue;
                         	verbose && fout << "Rejecting... node " << j << " is " <<
                         			(!isDone[j] ? "not " : "") << "done." << endl;
                         	allDone = allDone && isDone[j];
@@ -177,7 +177,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                     isDone[i] = true;
                     allDone = true;
                     for( unsigned j=0; j<isDone.size(); j++ ) {
-                    	if ( j == parent ) continue;
+                    	if ( (int) j == parent ) continue;
                     	allDone = allDone && isDone[j];
                     }
                     if ( allDone ) {
@@ -189,7 +189,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
                 	isChild[i] = true;
                 	allDone = true;
                     for( unsigned j=0; j<isDone.size(); j++ ) {
-                    	if ( j == parent ) continue;
+                    	if ( (int) j == parent ) continue;
                     	allDone = allDone && isDone[j];
                     }
                     if ( allDone ) {

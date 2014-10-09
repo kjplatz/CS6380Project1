@@ -1,52 +1,64 @@
 Starting node 5
 Begin of round 1
---  Sending to fd 18: EXPLORE 5
---  Sending to fd 29: EXPLORE 5
---  Sending to fd 31: EXPLORE 5
---  Sending to fd 33: EXPLORE 5
---  Sending to fd 35: EXPLORE 5
---  Node 5 received message from fd 18 [-1] pending: EXPLORE 15
---  Node 5 received message from fd 29 [-1] pending: EXPLORE 25
---  Node 5 received message from fd 31 [-1] pending: EXPLORE 33
---  Node 5 received message from fd 33 [-1] pending: EXPLORE 4
---  Node 5 received message from fd 35 [-1] pending: EXPLORE 50
+--  Sending to fd 8: EXPLORE 5
+--  Sending to fd 26: EXPLORE 5
+--  Sending to fd 44: EXPLORE 5
+--  Sending to fd 46: EXPLORE 5
+--  Sending to fd 48: EXPLORE 5
+--  Sending to fd 51: EXPLORE 5
+--  Sending to fd 53: EXPLORE 5
+--  Sending to fd 55: EXPLORE 5
+--  Sending to fd 57: EXPLORE 5
+--  Node 5 received message from fd 8 [-1] pending: EXPLORE 10
+--  Node 5 received message from fd 26 [-1] pending: EXPLORE 15
+--  Node 5 received message from fd 44 [-1] pending: EXPLORE 25
+--  Node 5 received message from fd 46 [-1] pending: EXPLORE 30
+--  Node 5 received message from fd 48 [-1] pending: EXPLORE 33
+--  Node 5 received message from fd 51 [-1] pending: EXPLORE 28
+--  Node 5 received message from fd 53 [-1] pending: EXPLORE 4
+--  Node 5 received message from fd 55 [-1] pending: EXPLORE 3
+--  Node 5 received message from fd 57 [-1] pending: EXPLORE 50
 End of round 1
 Begin of round 2
---  Sending to fd 18: EXPLORE 50
---  Sending to fd 29: EXPLORE 50
---  Sending to fd 31: EXPLORE 50
---  Sending to fd 33: EXPLORE 50
---  Sending to fd 35: (NULL) -1
---  Node 5 received message from fd 18 [15] pending: EXPLORE 30
---  Node 5 received message from fd 29 [25] pending: EXPLORE 30
---  Node 5 received message from fd 31 [33] pending: (NULL) -1
---  Node 5 received message from fd 33 [4] pending: EXPLORE 30
---  Node 5 received message from fd 35 [50] (parent): (NULL) -1
+--  Sending to fd 8: EXPLORE 50
+--  Sending to fd 26: EXPLORE 50
+--  Sending to fd 44: EXPLORE 50
+--  Sending to fd 46: EXPLORE 50
+--  Sending to fd 48: EXPLORE 50
+--  Sending to fd 51: EXPLORE 50
+--  Sending to fd 53: EXPLORE 50
+--  Sending to fd 55: EXPLORE 50
+--  Sending to fd 57: (NULL) -1
+--  Node 5 received message from fd 8 [10] pending: EXPLORE 50
+--  Node 5 received message from fd 26 [15] pending: EXPLORE 50
+--  Node 5 received message from fd 44 [25] pending: EXPLORE 50
+--  Node 5 received message from fd 46 [30] pending: EXPLORE 50
+--  Node 5 received message from fd 48 [33] pending: EXPLORE 50
+--  Node 5 received message from fd 51 [28] pending: EXPLORE 50
+--  Node 5 received message from fd 53 [4] pending: EXPLORE 50
+--  Node 5 received message from fd 55 [3] pending: EXPLORE 50
+--  Node 5 received message from fd 57 [50] (parent): (NULL) -1
 End of round 2
 Begin of round 3
---  Sending to fd 18: (NULL) -1
---  Sending to fd 29: (NULL) -1
---  Sending to fd 31: (NULL) -1
---  Sending to fd 33: (NULL) -1
---  Sending to fd 35: (NULL) -1
---  Node 5 received message from fd 18 [15] pending: REJECT -1
---  Node 5 received message from fd 29 [25] pending: REJECT -1
---  Node 5 received message from fd 31 [33] pending: REJECT -1
---  Node 5 received message from fd 33 [4] pending: REJECT -1
---  Node 5 received message from fd 35 [50] (parent): (NULL) -1
+--  Sending to fd 8: REJECT -1
+--  Sending to fd 26: REJECT -1
+--  Sending to fd 44: REJECT -1
+--  Sending to fd 46: REJECT -1
+--  Sending to fd 48: REJECT -1
+--  Sending to fd 51: REJECT -1
+--  Sending to fd 53: REJECT -1
+--  Sending to fd 55: REJECT -1
+--  Sending to fd 57: DONE -1
+--  Node 5 received message from fd 8 [10] (rejected/done): REJECT -1
+--  Node 5 received message from fd 26 [15] (rejected/done): REJECT -1
+--  Node 5 received message from fd 44 [25] (rejected/done): REJECT -1
+--  Node 5 received message from fd 46 [30] (rejected/done): REJECT -1
+--  Node 5 received message from fd 48 [33] (rejected/done): REJECT -1
+--  Node 5 received message from fd 51 [28] (rejected/done): REJECT -1
+--  Node 5 received message from fd 53 [4] (rejected/done): REJECT -1
+--  Node 5 received message from fd 55 [3] (rejected/done): REJECT -1
+--  Node 5 received message from fd 57 [50] (parent): (NULL) -1
 End of round 3
-Begin of round 4
---  Sending to fd 18: (NULL) -1
---  Sending to fd 29: (NULL) -1
---  Sending to fd 31: (NULL) -1
---  Sending to fd 33: (NULL) -1
---  Sending to fd 35: DONE -1
---  Node 5 received message from fd 18 [15] (rejected/done): (NULL) -1
---  Node 5 received message from fd 29 [25] (rejected/done): (NULL) -1
---  Node 5 received message from fd 31 [33] (rejected/done): (NULL) -1
---  Node 5 received message from fd 33 [4] (rejected/done): (NULL) -1
---  Node 5 received message from fd 35 [50] (parent): (NULL) -1
-End of round 4
 Node 5 terminating...
     parent: 50
     children: 
