@@ -9,21 +9,23 @@ Team Members:
 3. Joshua Olson
 
 Instructions:
-1. This should be run on CS1.utdallas.edu.
+1. This should be run on CS1.utdallas.edu or CS2.utdallas.edu
 2. Within the CS6380Project1 directory provided, run the "make" command.  This will create a "CS6380Project1" executable in the CS6380Project1/bin directory.
-3. Navigate to the CS6380Project1/bin directory.
+3. Navigate to the CS6380Project1/run directory.
 4. Run the CS6380Project1 executable with the first argument being the text file containing the graph configuration.
-5. Output will display to console.  Additionally, each node will have a .log file in the /bin directory describing its activity.
+5. Output will display to console.  Additionally, each node will have a .log file in the /run directory describing its activity.
 
 Example Usage:
 {cslinux1:~} cd CS6380Project1
 {cslinux1:~} make
-{cslinux1:~} cd bin
-{cslinux1:~} CS6380Project1 ../run/input6.txt
+{cslinux1:~} cd run
+{cslinux1:~} ../bin/CS6380Project1 input6.txt
 {cslinux1:~} less node3.log
 
 Sample Test Case:
 Input: CS6380Project1/run/input6.txt
 Output: CS6380Project1/run/output6.txt
+Detailed log files: CS6380Project1/run/logfiles.tar.gz
+
 Visual of the Graph: https://drive.google.com/file/d/0B2fmtyogc8AINVpENXdBdTBPSnM/view?usp=sharing
 Open with draw.io.

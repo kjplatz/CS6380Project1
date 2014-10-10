@@ -28,6 +28,34 @@ using namespace std;
 //    node_id     : The node ID to represent
 //    master_fd   : Socket file descriptor to talk to/from master thread
 //    neighbor_fds: The socket file descriptors of my neighbors
+
+// Summary of execution:
+//    The node "seeds" its toSend vector with an EXPLORE(node_id)
+//    The node waits for a TICK from the master thread.
+//        If the node receives a LEADER message from the master, it outputs its
+//            parent's ID and the ID's of its children.  It then also stores in
+//            a file "children.txt" the ID's of its children (for the master
+//            thread to read -- this gives us a proper BFS tree output)
+//        Otherwise the node sends the toSend vector of messages to its neighbors
+//        If the node receives an EXPLORE message:
+//            If the EXPLORE has an ID higher than any I've seen so far:
+//                We queue up an EXPLORE(ID) message for all neighbors
+//                We mark the sender as our parent.
+//                We clear the DONE flags for all non-parent nodes
+//                We set the CHILD flags for all non-parent nodes
+//            If the EXPLORE is equal to an ID I've seen so far,
+//                I mark that node as DONE
+//                I send a REJECT to that node
+//            Otherwise, we ignore that EXPLORE message
+//        If we receive a REJECT message:
+//            We clear the sender's CHILD flag
+//            We set the sender's DONE flag
+//        If we receive a DONE message:
+//            We set the sender's DONE flag
+//    If all nodes are done:
+//        If we are our own parent, we send LEADER to the master thread
+//        Otherwise, we send DONE to our parent
+//    If we aren't done with the protocol, we send a DONE to the master thread.
 void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
     int maxId = node_id;
     ofstream fout(string{"node"} + to_string(node_id) + string{".log"});
