@@ -58,7 +58,7 @@ using namespace std;
 //    If we aren't done with the protocol, we send a DONE to the master thread.
 void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
     int maxId = node_id;
-    ofstream fout(string{"node"} + to_string(node_id) + string{".log"});
+    ofstream fout(string {"node"} + to_string(node_id) + string {".log"});
     fout << "Starting node " << node_id << endl;
 
     int round = 0;
@@ -86,7 +86,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
 
     // Vector of messages to send in next round.
     // Initially we send (EXPLORE, node_id) to everyone
-    vector<Message> toSend( numNbrs, Message{ Message::MSG_EXPLORE, node_id});
+    vector<Message> toSend( numNbrs, Message { Message::MSG_EXPLORE, node_id});
     while (true) {
         round++;
         // Wait for the next "TICK"
@@ -107,7 +107,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
 
             for( int i=0; i<numNbrs; i++ ) {
                 if ( isChild[i] ) {
-                	os << neighborIds[i] << " ";
+                    os << neighborIds[i] << " ";
                     children << neighborIds[i] << " ";
                 }
             }
@@ -118,7 +118,7 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
             cout << os.str();
             fout << os.str();
 
-            Message done{Message::MSG_DONE};
+            Message done {Message::MSG_DONE};
             done.send( master_fd );
 
             return;
@@ -128,19 +128,19 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
 
         // Send messages to all my neighbors
         for( unsigned i=0; i<neighbor_fds.size(); i++ ) {
-        	fout << "--  Sending to node " << neighborIds[i] <<
-        			"[fd " << neighbor_fds[i] << "]: " <<
-        		 toSend[i].toString() << endl;
-        	toSend[i].send( neighbor_fds[i] );
+            fout << "--  Sending to node " << neighborIds[i] <<
+                 "[fd " << neighbor_fds[i] << "]: " <<
+                 toSend[i].toString() << endl;
+            toSend[i].send( neighbor_fds[i] );
         }
 
         // By default everyone gets a NULL message
-        std::fill( toSend.begin(), toSend.end(), Message{Message::MSG_NULL} );
+        std::fill( toSend.begin(), toSend.end(), Message {Message::MSG_NULL} );
 
         // Receive messages and process...
         for( unsigned i=0; i<neighbor_fds.size(); i++ ) {
-        	Message msg( neighbor_fds[i] );
-        	int receivedId;
+            Message msg( neighbor_fds[i] );
+            int receivedId;
 
             string pcd;
             if ( parent == (int)i ) pcd = "(parent)";
@@ -150,105 +150,104 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
             } else pcd = "pending";
 
             fout << "--  Node " << node_id <<
-            	    " received message from node " << neighborIds[i] <<
-                    " [" << neighbor_fds[i] << "] " << pcd << ": " << msg.toString() << endl << flush;
+                 " received message from node " << neighborIds[i] <<
+                 " [" << neighbor_fds[i] << "] " << pcd << ": " << msg.toString() << endl << flush;
             bool allDone = false;
 
             switch (msg.msgType) {
-                case Message::MSG_EXPLORE:
-                    receivedId = msg.id;
-                    if ( neighborIds[i] < 0 ) {
-                    	neighborIds[i] = receivedId;
-                    }
+            case Message::MSG_EXPLORE:
+                receivedId = msg.id;
+                if ( neighborIds[i] < 0 ) {
+                    neighborIds[i] = receivedId;
+                }
 
-                    // Got a higher ID
-                    if (receivedId > maxId )
-                    {
-                    	parent = i;
-                        maxId = receivedId;
-                        // New parent -- any DONE or REJECT messages
-                        // we've received are no longer any good.
-                        std::fill( isDone.begin(), isDone.end(), false );
-                        std::fill( isChild.begin(), isChild.end(), false );
-                        // Forward this ID on to all neighbors (but the parent)
-                        std::fill( toSend.begin(), toSend.end(), msg );
-                        toSend[parent] = Message::MSG_NULL;
+                // Got a higher ID
+                if (receivedId > maxId ) {
+                    parent = i;
+                    maxId = receivedId;
+                    // New parent -- any DONE or REJECT messages
+                    // we've received are no longer any good.
+                    std::fill( isDone.begin(), isDone.end(), false );
+                    std::fill( isChild.begin(), isChild.end(), false );
+                    // Forward this ID on to all neighbors (but the parent)
+                    std::fill( toSend.begin(), toSend.end(), msg );
+                    toSend[parent] = Message::MSG_NULL;
 
-                        // Is everyone done now?
-                        allDone = true;
-                        for( unsigned j=0; j<isDone.size(); j++ ) {
-                        	if ( (int)j == parent ) continue;
-                        	allDone = allDone && isDone[j];
-                        }
-                    } else if ( receivedId == maxId ) {
-                    	// If we get maxId from another source, let him know
-                    	// he's not our parent...
-                    	toSend[i] = Message{Message::MSG_REJECT};
-                        isDone[i] = true;
-
-                        // Is everyone done now?
-                        allDone = true;
-                        for( unsigned j=0; j<isDone.size(); j++ ) {
-                        	if ( (int)j == parent ) continue;
-                        	allDone = allDone && isDone[j];
-                        }
-                    } // else -- we don't need to worry about if we got
-                    if ( allDone ) {
-                       	toSend[parent] = Message{Message::MSG_DONE};
-                    }
-                      // an EXPLORE smaller than our maxId.
-                      // since we're going to send a new EXPLORE out within
-                      // the next round.
-                    break;
-
-                case Message::MSG_REJECT:
-                    isDone[i] = true;
-
-                    // is everyone done now?
+                    // Is everyone done now?
                     allDone = true;
                     for( unsigned j=0; j<isDone.size(); j++ ) {
-                    	if ( (int) j == parent ) continue;
-                    	allDone = allDone && isDone[j];
+                        if ( (int)j == parent ) continue;
+                        allDone = allDone && isDone[j];
                     }
-                    if ( allDone ) {
-                    	toSend[parent] = Message{Message::MSG_DONE};
-                    }
-                    break;
+                } else if ( receivedId == maxId ) {
+                    // If we get maxId from another source, let him know
+                    // he's not our parent...
+                    toSend[i] = Message {Message::MSG_REJECT};
+                    isDone[i] = true;
 
-                case Message::MSG_DONE:
-                	isDone[i] = true;
-                	isChild[i] = true;
-                	allDone = true;
+                    // Is everyone done now?
+                    allDone = true;
                     for( unsigned j=0; j<isDone.size(); j++ ) {
-                    	if ( (int) j == parent ) continue;
-                    	allDone = allDone && isDone[j];
+                        if ( (int)j == parent ) continue;
+                        allDone = allDone && isDone[j];
                     }
-                    if ( allDone ) {
-                        if ( parent == -1 ) {
-                            done = true;
-                        } else {
-                    	    toSend[parent] = Message{Message::MSG_DONE};
-                        }
-                    }
-                    break;
+                } // else -- we don't need to worry about if we got
+                if ( allDone ) {
+                    toSend[parent] = Message {Message::MSG_DONE};
+                }
+                // an EXPLORE smaller than our maxId.
+                // since we're going to send a new EXPLORE out within
+                // the next round.
+                break;
 
-                // Nothing to see here.  Really!
-                case Message::MSG_NULL:
-                    break;
-                default:
-                    throw runtime_error(
-                            string{"Process thread received unexpected message: "} + msg.toString());
+            case Message::MSG_REJECT:
+                isDone[i] = true;
+
+                // is everyone done now?
+                allDone = true;
+                for( unsigned j=0; j<isDone.size(); j++ ) {
+                    if ( (int) j == parent ) continue;
+                    allDone = allDone && isDone[j];
+                }
+                if ( allDone ) {
+                    toSend[parent] = Message {Message::MSG_DONE};
+                }
+                break;
+
+            case Message::MSG_DONE:
+                isDone[i] = true;
+                isChild[i] = true;
+                allDone = true;
+                for( unsigned j=0; j<isDone.size(); j++ ) {
+                    if ( (int) j == parent ) continue;
+                    allDone = allDone && isDone[j];
+                }
+                if ( allDone ) {
+                    if ( parent == -1 ) {
+                        done = true;
+                    } else {
+                        toSend[parent] = Message {Message::MSG_DONE};
+                    }
+                }
+                break;
+
+            // Nothing to see here.  Really!
+            case Message::MSG_NULL:
+                break;
+            default:
+                throw runtime_error(
+                    string {"Process thread received unexpected message: "} + msg.toString());
             }
         }
-        
+
         if ( !done ) {
             Message doneMsg(Message::MSG_DONE, round);
             fout << "End of round " << round << endl << flush;
             doneMsg.send(master_fd);
         } else {
-        	Message leaderMsg( Message::MSG_LEADER, node_id );
-        	fout << "I'm the leader!  Woooot!" << endl << flush;
-        	leaderMsg.send( master_fd );
+            Message leaderMsg( Message::MSG_LEADER, node_id );
+            fout << "I'm the leader!  Woooot!" << endl << flush;
+            leaderMsg.send( master_fd );
         }
     }
 }

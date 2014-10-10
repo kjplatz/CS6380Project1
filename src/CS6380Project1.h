@@ -17,7 +17,7 @@
 
 #if __cplusplus <= 199711L
 #    error  "This project requires a compiler that complies with the"\
-            " ISO/IEC 14882:2011 standard (aka C++11)"
+" ISO/IEC 14882:2011 standard (aka C++11)"
 #endif
 
 #define TESTING
@@ -31,8 +31,8 @@
 //    int         : Number of neighbors found
 
 int parse_config( std::string cfg_file,
-		          std::vector<int>& return_vals,
-		          std::vector<std::vector<bool>>& return_nbrs );
+                  std::vector<int>& return_vals,
+                  std::vector<std::vector<bool>>& return_nbrs );
 
 //
 // Function to run a node
