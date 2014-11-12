@@ -1,15 +1,16 @@
 /*
- * CS6380Project1.h
+ * CS6380Project2.h
  *
  *  Created on: Sep 25, 2014
+ *  Renamed to CS6380Project2.h on Nov 11, 2014
  *  Authors:
  *      Kenneth Platz
  *      Joshua Olson
  *      Brian Snedic
  */
 
-#ifndef CS6380PROJECT1_H_
-#define CS6380PROJECT1_H_
+#ifndef CS6380PROJECT2_H_
+#define CS6380PROJECT2_H_
 
 #include <iosfwd>
 #include <string>
@@ -32,7 +33,7 @@
 
 int parse_config( std::string cfg_file,
                   std::vector<int>& return_vals,
-                  std::vector<std::vector<bool>>& return_nbrs );
+                  std::vector<std::vector<float>>& return_nbrs );
 
 //
 // Function to run a node
@@ -40,7 +41,8 @@ int parse_config( std::string cfg_file,
 //    node_id     : The node ID to represent
 //    master_fd   : Socket file descriptor to talk to/from master thread
 //    neighbor_fds: The socket file descriptors of my neighbors
-void run_node( int node_id, int master_fd,  std::vector<int> neighbor_fds );
+#include "Neighbor.h"
+void run_node( int node_id, int master_fd,  std::vector<Neighbor> neighbor_fds );
 
 extern bool verbose;
 

@@ -8,7 +8,6 @@
  *      Brian Snedic
  */
 
-#include "CS6380Project1.h"
 #include "Message.h"
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -18,14 +17,16 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include "CS6380Project2.h"
 
 using namespace std;
 
 // Move constructor
 
-Message::Message( Message&& m ) : msgType( m.msgType ), id(m.id) {
+Message::Message( Message&& m ) :
+	msgType( m.msgType ), round(m.round), level(m.level), edge(m.edge) {
     m.msgType = MSG_NULL;
-    m.id = -1;
+    m.round = -1;
 }
 
 
@@ -42,15 +43,39 @@ Message::Message( int fd ) {
     string type;
     is >> type;
 
-    is >> id;
-    if ( is.eof() ) id = -1;
+    is >> round;
+    if ( is.eof() ) round = -1;
 
     if ( type == string {"TICK"}) msgType = MSG_TICK;
+    else if ( type == string {"ACK"}) msgType = MSG_ACK;
+    else if ( type == string {"INITIATE"}) msgType = MSG_INITIATE;
+    else if ( type == string {"REPORT"}) msgType = MSG_REPORT;
+    else if ( type == string {"TEST"}) msgType = MSG_TEST;
+    else if ( type == string {"ACCEPT"}) msgType = MSG_ACCEPT;
+    else if ( type == string {"CONNECT"}) msgType = MSG_CONNECT;
     else if ( type == string {"DONE"}) msgType = MSG_DONE;
-    else if ( type == string {"EXPLORE"}) msgType = MSG_EXPLORE;
     else if ( type == string {"REJECT"}) msgType = MSG_REJECT;
-    else if ( type == string {"LEADER"}) msgType = MSG_LEADER;
+    else if ( type == string {"CHANGEROOT"}) msgType = MSG_CHANGEROOT;
     else msgType = MSG_NULL;
+
+    if ( msgType == MSG_REPORT ||
+    	 msgType == MSG_TEST   ||
+		 msgType == MSG_ACCEPT ||
+		 msgType == MSG_CONNECT||
+		 msgType == MSG_REJECT ||
+		 msgType == MSG_CHANGEROOT ) {
+    	int v1, v2;
+    	float w;
+        is >> v1 >> v2 >> w;
+        edge = Edge{v1,v2,w};
+
+        if ( msgType == MSG_TEST ||
+        	 msgType == MSG_CONNECT ||
+			 msgType == MSG_REJECT ||
+			 msgType == MSG_CHANGEROOT) {
+        	is >> level;
+        }
+    }
 }
 
 // Send a message to a file descriptor
@@ -64,27 +89,46 @@ string Message::toString() const {
     string str;
 
     switch( msgType ) {
-    case MSG_TICK :
-        str = "TICK";
-        break;
-    case MSG_DONE :
-        str = "DONE";
-        break;
-    case MSG_EXPLORE :
-        str = "EXPLORE";
-        break;
-    case MSG_REJECT :
-        str = "REJECT";
-        break;
-    case MSG_LEADER :
-        str = "LEADER";
-        break;
     case MSG_NULL :
         str = "(NULL)";
         break;
+    case MSG_TICK :
+        str = string{"TICK "} + to_string( round );
+        break;
+    case MSG_ACK :
+    	str = string{"ACK "} + to_string( round );
+    	break;
+    case MSG_INITIATE:
+    	str = string{"INITIATE "} + to_string( round );
+    	break;
+    case MSG_REPORT:
+    	str = string{"REPORT "} + to_string( round ) + edge.to_string();
+    	break;
+    case MSG_TEST:
+    	str = string{"TEST "} + to_string( round )
+		      + string{" "} + edge.to_string() + string{" "}
+    	      + to_string(level);
+    	return str;
+    case MSG_ACCEPT:
+    	str = string{"ACCEPT "} + to_string( round )
+		      + string{" "} + edge.to_string() + string{" "}
+		      + to_string(level);
+    	return str;
+    case MSG_CONNECT:
+    	str = string{"CONNECT "} + to_string( round )
+		      + string{" "} + edge.to_string() + string{" "} + to_string(level);
+    	return str;
+    case MSG_DONE :
+        str = string{"DONE "} + to_string(round);
+        break;
+    case MSG_REJECT :
+        str = string{"REJECT "} + to_string(round) + string{" "} + edge.to_string();
+        break;
+    case MSG_CHANGEROOT:
+    	str = string{"CHANGEROOT "} + to_string( round )
+		      + string{" "} + edge.to_string() + string{" "} + to_string(level);
+    	return str;
     }
-
-    str += string { ' ' } + to_string( id );
 
     return str;
 }

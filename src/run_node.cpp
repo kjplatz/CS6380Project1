@@ -8,17 +8,24 @@
  *      Brian Snedic
  */
 
+#include <algorithm>
+#include <chrono>
 #include <cstring>
-#include <vector>
-#include <iostream>
-#include <string>
-#include <sstream>
 #include <fstream>
+#include <iostream>
+#include <queue>
+#include <random>
+#include <sstream>
 #include <stdexcept>
+#include <string>
+#include <set>
+#include <vector>
 
 #include <sys/select.h>
 
-#include "CS6380Project1.h"
+#include "CS6380Project2.h"
+#include "Message.h"
+#include "Neighbor.h"
 
 using namespace std;
 
@@ -27,37 +34,87 @@ using namespace std;
 // Parameters:
 //    node_id     : The node ID to represent
 //    master_fd   : Socket file descriptor to talk to/from master thread
-//    neighbor_fds: The socket file descriptors of my neighbors
+//    neighbors   : Neighbor struct information about our neighbors
 
 // Summary of execution:
-//    The node "seeds" its toSend vector with an EXPLORE(node_id)
-//    The node waits for a TICK from the master thread.
-//        If the node receives a LEADER message from the master, it outputs its
-//            parent's ID and the ID's of its children.  It then also stores in
-//            a file "children.txt" the ID's of its children (for the master
-//            thread to read -- this gives us a proper BFS tree output)
-//        Otherwise the node sends the toSend vector of messages to its neighbors
-//        If the node receives an EXPLORE message:
-//            If the EXPLORE has an ID higher than any I've seen so far:
-//                We queue up an EXPLORE(ID) message for all neighbors
-//                We mark the sender as our parent.
-//                We clear the DONE flags for all non-parent nodes
-//                We set the CHILD flags for all non-parent nodes
-//            If the EXPLORE is equal to an ID I've seen so far,
-//                I mark that node as DONE
-//                I send a REJECT to that node
-//            Otherwise, we ignore that EXPLORE message
-//        If we receive a REJECT message:
-//            We clear the sender's CHILD flag
-//            We set the sender's DONE flag
-//        If we receive a DONE message:
-//            We set the sender's DONE flag
-//    If all nodes are done:
-//        If we are our own parent, we send LEADER to the master thread
-//        Otherwise, we send DONE to our parent
-//    If we aren't done with the protocol, we send a DONE to the master thread.
-void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
-    int maxId = node_id;
+
+void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
+	bool isLeader = true;                     // Am I the leader of my component?  (Initially yes)
+	Edge myComponent = Edge{ node_id, 0, 0 }; // What is the ID of my component? (Initially me)
+	int  myLevel = 0;                         // What level is my component? (Initially 0)
+	Neighbor parent = Neighbor{ 0, 0, 0 };    // Who is my parent in the MST?
+
+	// Log all my stuff...
+    ofstream fout(string {"node"} + to_string(node_id) + string {".log"});
+    fout << "Starting node " << node_id << endl;
+
+    vector<Neighbor>   candidates,  // Candidate edges
+	                   trees,       // Tree edges
+					   rejects;     // Rejected edges
+
+    vector<queue<Message>> msgQs;   // Queued messages from each neighbor
+    std::vector<Message> testQ;     // Buffered test messages
+    for( auto nbr = neighbors.begin(); nbr != neighbors.end(); nbr++ ) {
+    	candidates.push_back( *nbr );
+    	msgQs.push_back( queue<Message>{} );
+    }
+
+    std::sort( candidates.begin(), candidates.end() );
+
+    fout << "Neighbor list..." << endl;
+    for( auto nbr : candidates ) {
+    	fout << "    " << nbr.to_string() << endl;
+    }
+    enum NodeState {
+    	STATE_WAITING,      // Waiting for a message from leader
+		STATE_INITIATED,    // Received 'initiate' from leader
+		STATE_SENT_TEST,    // Sent test message, awaiting response
+		STATE_SENT_MWOE,    // Sent MWOE to leader, awaiting response
+		STATE_SENT_CONNECT, // Sent connect request to other node.
+    } myState = STATE_SENT_TEST;
+
+    // Create a seed for the PRNG...
+    unsigned seed = chrono::system_clock::now().time_since_epoch().count();
+    seed += node_id;
+
+    mt19937 generator(seed);
+	uniform_int_distribution<int> distribution( 1, 20 );
+    auto random_period = std::bind(distribution, generator);
+
+    // At this point, calling random_period() will generate a random number
+    // between 1 and 20, inclusive...
+
+    // Send out the first "test" message...
+    Neighbor candidate = candidates.front();
+    Message test{ Message::MSG_TEST,
+    	          random_period(),    // Deliver at a random time between 0 and 20...
+				  myComponent,        // My current component ID
+				  myLevel };          // My current level
+    test.send( candidate.getFd() );
+
+    fout << "Sending to neighbor " << candidate.getId() << "(" << candidate.getFd() << ")"
+    	 << test.toString() << endl;
+
+    // We're as ready as we're ever going to be...
+
+    while( true ) {
+    	Message begin( master_fd );
+    	fout << "Starting round " << begin.round << endl;
+
+    	fd_set fdSet;
+    	int maxFd = 0;
+    	for( auto nbr = neighbors.begin(); nbr != neighbors.end(); nbr++ ) {
+    		FD_SET( nbr->getFd(), &fdSet );
+    		maxFd = max( maxFd, nbr->getFd() );
+    	}
+
+
+    	fout << "End of round " << begin.round << endl;
+    	Message ack( Message::MSG_ACK, begin.round );
+    	ack.send( master_fd );
+    }
+#if 0
+	int maxId = node_id;
     ofstream fout(string {"node"} + to_string(node_id) + string {".log"});
     fout << "Starting node " << node_id << endl;
 
@@ -250,4 +307,5 @@ void run_node(int node_id, int master_fd, vector<int> neighbor_fds) {
             leaderMsg.send( master_fd );
         }
     }
+#endif
 }

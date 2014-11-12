@@ -56,7 +56,8 @@
 #include <sys/types.h>
 #include <netinet/sctp.h>
 
-#include "CS6380Project1.h"
+#include "CS6380Project2.h"
+#include "Neighbor.h"
 
 using namespace std;
 
@@ -64,7 +65,7 @@ bool verbose=false;
 
 int main( int argc, char** argv ) {
     int numNodes;
-    vector<vector<bool>> neighbors;
+    vector<vector<float>> neighborWts;
     vector<int> nodeIds;
 
     if ( argc == 1 ) {
@@ -73,7 +74,7 @@ int main( int argc, char** argv ) {
     }
 
     string cfg_file { argv[1] };
-    numNodes = parse_config( cfg_file, nodeIds, neighbors );
+    numNodes = parse_config( cfg_file, nodeIds, neighborWts );
 
     if ( argc > 2 && string {argv[2]} == string {"verbose"} ) verbose = true;
 
@@ -81,14 +82,14 @@ int main( int argc, char** argv ) {
     for( int i=0; i<numNodes; i++ ) {
         cout << "Node " << i << " has ID: " << nodeIds[i] << endl;
         cout << "    -- Neighbors: ";
-        for( unsigned j=0; j<neighbors[i].size(); j++ ) {
-            if ( neighbors[i][j] ) cout << j << " ";
+        for( unsigned j=0; j<neighborWts[i].size(); j++ ) {
+            if ( neighborWts[i][j] ) cout << j << " <" << neighborWts[i][j] << "> ";
         }
         cout << endl;
     }
 
     // file descriptors for neighbors to talk
-    vector<vector<int>> neighbor_fds(numNodes);
+    vector<vector<Neighbor>> neighbors(numNodes);
     // file descriptors for master to talk to threads
     vector<int> master_fds;
     vector<thread*> threads;
@@ -135,7 +136,7 @@ int main( int argc, char** argv ) {
 
         for( int j=0; j<numNodes; j++ ) {
             if ( i == j ) continue;   // A node can't be its own neighbor...
-            if ( neighbors[i][j] ) {
+            if ( neighborWts[i][j] > 0 ) {
 
                 // Note, we are using socketpair() here.  A (successful) call to
                 // socketpair() returns two local socket file descriptors at either
@@ -152,28 +153,31 @@ int main( int argc, char** argv ) {
 
                 // Add the appropriate file descriptors to process i's and j's neighbor
                 // lists.
-                neighbor_fds[i].push_back( sockpair[0] );
-                neighbor_fds[j].push_back( sockpair[1] );
+                //neighbor_fds[i].push_back( sockpair[0] );
+                //neighbor_fds[j].push_back( sockpair[1] );
 
+                neighbors[i].push_back( Neighbor{ j, sockpair[0], neighborWts[i][j]} );
+                neighbors[j].push_back( Neighbor{ i, sockpair[1], neighborWts[i][j]} );
                 verbose && cout << "Creating socketpair [" << sockpair[0] << ", " << sockpair[1] << "] for nodes "
                                 << i << " <-> " << j << endl;
 
                 // Set neighbors[j][i] to false so we don't create duplicate channels.
-                neighbors[j][i] = false;
+                neighborWts[j][i] = 0;
             }
         }
 
         //
         // Spawn a new thread and push it back into the thread vector array...
-        threads.push_back( new thread( run_node, nodeIds[i], master_fd, neighbor_fds[i] ) );
+        threads.push_back( new thread( run_node, nodeIds[i], master_fd, neighbors[i] ) );
     }
 
     int round=0;
+    sleep(1);
 
     int leader = -1;
-    while( leader < 0 ) {
+    while( leader < 0 && round < 10 ) {
         round++;
-        sleep(1);
+        usleep(250000);
 
         Message tick( Message::MSG_TICK, round );
 
@@ -184,7 +188,7 @@ int main( int argc, char** argv ) {
             tick.send( fd );
         }
 
-        sleep(1);
+        usleep(250000);
 
         int doneCount=0;
         // Read a message from each process file descriptor... this will either be a
@@ -194,12 +198,12 @@ int main( int argc, char** argv ) {
             Message msg( master_fds[i] );
 
             switch( msg.msgType ) {
-            case Message::MSG_LEADER:  // I know who the leader is.  Ignore me from here on out
+            case Message::MSG_DONE:  // I know who the leader is.  Ignore me from here on out
                 cout << "Got message from fd " << master_fds[i] << ": " << msg.toString() << endl;
-                leader = msg.id;
+                leader = msg.round;
                 break;
             // fall through
-            case Message::MSG_DONE:    // I don't know, but I'm done with this round.
+            case Message::MSG_ACK:    // I don't know, but I'm done with this round.
                 doneCount++;
                 break;
 
@@ -212,11 +216,13 @@ int main( int argc, char** argv ) {
         cout << "Received DONE from " << doneCount << " threads." << endl;
     }
 
+    exit(1);
+
     cout << "got LEADER(" << leader << ")" << endl;
 
     queue<int, list<int>> bfsQ;
     bfsQ.push( leader );
-    Message leaderMsg { Message::MSG_LEADER, leader };
+    Message leaderMsg { Message::MSG_DONE, leader };
     string ignore;
     while( !bfsQ.empty() ) {
         int node = bfsQ.front();
