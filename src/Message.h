@@ -43,7 +43,7 @@ public:
     int  level;
     Edge edge;
 
-    Message() = delete;
+    Message() : msgType(MSG_NULL) {};
     Message( const Message& ) = default;
     Message( Message&& );
 
@@ -56,7 +56,7 @@ public:
     Message( enum MsgType mt, int _r=-1 ) :
     	msgType(mt), round(_r), level(0), edge() {};
     Message( enum MsgType mt, int r, Edge e, int l=0 )
-        : msgType(mt), round(r), edge(e), level(l) {};
+        : msgType(mt), round(r), level(l), edge(e) {};
     Message( enum MsgType mt, Edge e, int l=0 ) :
         msgType(mt), round(), level(l), edge(e) {};
 

@@ -11,9 +11,10 @@
 #include <string>
 #include "Edge.h"
 class Neighbor {
-	int    id;
-	int    fd;
+	int    id;     // Node identifier
+	int    fd;     // File descriptor
 	float  weight;
+	int    idx;    // Index into node vector
 
     enum EdgeType {
 	    EDGE_CANDIDATE = 0,
@@ -52,6 +53,8 @@ public:
 			   std::to_string(weight) + std::string{ ">"};
 	}
 
+	void setIdx( int x ) { idx=x; }
+	int getIdx() const { return idx; }
 	bool hasResponded() const { return responded; }
 	void clearResponded() { responded = 0; }
 	void setResponded() { responded = 1; }

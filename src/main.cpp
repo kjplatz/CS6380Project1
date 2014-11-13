@@ -175,7 +175,7 @@ int main( int argc, char** argv ) {
     sleep(1);
 
     int leader = -1;
-    while( leader < 0 && round < 10 ) {
+    while( leader < 0 && round < 20 ) {
         round++;
         usleep(250000);
 

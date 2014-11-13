@@ -14,6 +14,7 @@
 #include <netinet/sctp.h>
 #include <cerrno>
 #include <cstring>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -66,12 +67,15 @@ Message::Message( int fd ) {
 		 msgType == MSG_CHANGEROOT ) {
     	int v1, v2;
     	float w;
-        is >> v1 >> v2 >> w;
+    	char c;
+        is >> c >> v1 >> v2 >> w;
         edge = Edge{v1,v2,w};
 
         if ( msgType == MSG_TEST ||
+        	 msgType == MSG_ACCEPT ||
         	 msgType == MSG_CONNECT ||
 			 msgType == MSG_REJECT ||
+			 msgType == MSG_REPORT ||
 			 msgType == MSG_CHANGEROOT) {
         	is >> level;
         }
@@ -101,9 +105,6 @@ string Message::toString() const {
     case MSG_INITIATE:
     	str = string{"INITIATE "} + to_string( round );
     	break;
-    case MSG_REPORT:
-    	str = string{"REPORT "} + to_string( round ) + edge.to_string();
-    	break;
     case MSG_TEST:
     	str = string{"TEST "} + to_string( round )
 		      + string{" "} + edge.to_string() + string{" "}
@@ -116,6 +117,10 @@ string Message::toString() const {
     	return str;
     case MSG_CONNECT:
     	str = string{"CONNECT "} + to_string( round )
+		      + string{" "} + edge.to_string() + string{" "} + to_string(level);
+    	return str;
+    case MSG_REPORT:
+    	str = string{"REPORT "} + to_string( round )
 		      + string{" "} + edge.to_string() + string{" "} + to_string(level);
     	return str;
     case MSG_DONE :
