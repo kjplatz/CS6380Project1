@@ -211,6 +211,8 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
     			        verbose && fout << "    Node " << candidates.front().getId()
     			        		        << ": " << test.toString() << endl;
     			    }
+
+    			    // TODO -- If we have no candidates and no tree edges, send the message back up the tree...
     		    } break;
     		case Message::MSG_REPORT: {
     			    if ( bufferedReport.edge < msg.edge ) {
