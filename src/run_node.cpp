@@ -158,7 +158,7 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
     		case Message::MSG_TEST: {
 		    	    verbose && fout << " received TEST from " << msg.edge.to_string();
 
-    			    if ( myLevel > msg.level ) {
+    			    if ( myLevel < msg.level ) {
     		    	    verbose && fout << "   (buffering...)" << endl;
                     	testQ.push_back( msg );
     		    	} else if ( myComponent != msg.edge ) {
@@ -217,13 +217,13 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
     			    	bufferedReport = msg;
     			    }
     			    for( auto nbr : trees ) {
-    			    	if ( nbr.getIdx == i ) nbr.hasResponded = true;
+    			    	if ( nbr.getIdx() == i ) nbr.setResponded();
     			    }
 
 
     			    bool phaseDone = !hasSentTest;
     			    for( auto nbr : trees ) {
-    			    	phaseDone = phaseDone && nbr.hasResponded;
+    			    	phaseDone = phaseDone && nbr.hasResponded();
     			    }
     			    if ( phaseDone ) {
     			    	bufferedReport.round = begin.round + random_period();
