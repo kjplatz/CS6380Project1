@@ -232,7 +232,7 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
     			    	bufferedReport.edge  = Edge{ 0, 0, numeric_limits<int>::max() };
     			    	bufferedReport.send( myParent.getFd() );
     			    }
-
+                    // TODO -- what to do if I'm the leader?
     		    } break;
     		case Message::MSG_ACCEPT: {
 
