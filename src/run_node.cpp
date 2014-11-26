@@ -262,11 +262,11 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
                     	hasSentTest = false;
                     	bool phaseDone = true;
                     	for( auto nbr : trees ) {
-                    		phaseDone = phaseDone & nbr.hasResponded();
+                    		phaseDone = phaseDone && nbr.hasResponded();
                     	}
                     	if (phaseDone) {
                     		if ( isLeader ) {
-                                // If I'm the leader, figure out what to do here...
+                                // TODO If I'm the leader, figure out what to do here...
                     		} else {
                     			// If I'm not the leader, pass this up the chain...
                                 bufferedReport.level = begin.level + random_period();

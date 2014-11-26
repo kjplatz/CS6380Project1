@@ -33,7 +33,8 @@ public:
 		MSG_ACCEPT,         // I'm in a different component
 		MSG_REJECT,         // I'm in the same component
 		MSG_CHANGEROOT,     // I'm your new leader now...
-		MSG_CONNECT         // Connect with me, please!
+		MSG_CONNECT,        // You, leaf! Connect!!!
+		MSG_CONNECT2ME      // Connect with me, please!
 //		MSG_EXPLORE,
 //      MSG_REJECT,
 //      MSG_LEADER

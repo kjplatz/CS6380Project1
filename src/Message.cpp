@@ -54,6 +54,7 @@ Message::Message( int fd ) {
     else if ( type == string {"TEST"}) msgType = MSG_TEST;
     else if ( type == string {"ACCEPT"}) msgType = MSG_ACCEPT;
     else if ( type == string {"CONNECT"}) msgType = MSG_CONNECT;
+    else if ( type == string {"CONNECT2ME" }) msgType=MSG_CONNECT2ME;
     else if ( type == string {"DONE"}) msgType = MSG_DONE;
     else if ( type == string {"REJECT"}) msgType = MSG_REJECT;
     else if ( type == string {"CHANGEROOT"}) msgType = MSG_CHANGEROOT;
@@ -63,6 +64,7 @@ Message::Message( int fd ) {
     	 msgType == MSG_TEST   ||
 		 msgType == MSG_ACCEPT ||
 		 msgType == MSG_CONNECT||
+		 msgType == MSG_CONNECT2ME ||
 		 msgType == MSG_REJECT ||
 		 msgType == MSG_CHANGEROOT ) {
     	int v1, v2;
@@ -73,7 +75,7 @@ Message::Message( int fd ) {
 
         if ( msgType == MSG_TEST ||
         	 msgType == MSG_ACCEPT ||
-        	 msgType == MSG_CONNECT ||
+        	 msgType == MSG_CONNECT2ME ||
 			 msgType == MSG_REJECT ||
 			 msgType == MSG_REPORT ||
 			 msgType == MSG_CHANGEROOT) {
@@ -118,6 +120,10 @@ string Message::toString() const {
     case MSG_CONNECT:
     	str = string{"CONNECT "} + to_string( round )
 		      + string{" "} + edge.to_string() + string{" "} + to_string(level);
+    	return str;
+    case MSG_CONNECT2ME:
+    	str = string{"CONNECT2ME "} + to_string( round )
+		      + string{" "} + edge.to_string();
     	return str;
     case MSG_REPORT:
     	str = string{"REPORT "} + to_string( round )
