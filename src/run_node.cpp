@@ -43,13 +43,17 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
 	bool isLeader = true;                     // Am I the leader of my component?  (Initially yes)
 	Edge myComponent = Edge{ node_id, 0, 0 }; // What is the ID of my component? (Initially me)
 	int  myLevel = 0;                         // What level is my component? (Initially 0)
+	int candidateLevel = -1;			  // What level is my candidate MWOE? (Initially -1 i.e. no candidate yet)
+			//TODO: determine new componentId and root	
 	Neighbor myParent = Neighbor{ 0, 0, 0 };  // Who is my parent in the MST?
 
 	// "Report" message we're waiting to send...
 	Message bufferedReport{ Message::MSG_REPORT,
-		                    0,
-							Edge{ node_id, 0, std::numeric_limits<int>::max() },
-							0 };
+		                0,
+				Edge{ node_id, 
+				      0, 
+				      std::numeric_limits<int>::max() },
+				0 };
 
 	// Log all my stuff...
     ofstream fout(string {"node"} + to_string(node_id) + string {".log"});
@@ -166,7 +170,7 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
     		    		Message accept( Message::MSG_ACCEPT,
     		    				        begin.round + random_period(),
     		    				        myComponent,
-										myLevel );
+							myLevel );
     		    		accept.send( neighbors[i].getFd() );
     		    		verbose && fout << "Sending to node " << neighbors[i].getId() <<": "<<
     		    				           accept.toString() << endl;
@@ -235,10 +239,94 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
                     // TODO -- what to do if I'm the leader?
     		    } break;
     		case Message::MSG_ACCEPT: {
+			// store the edge to be reported
+			bufferedReport.round = begin.round + random_period();
+			bufferedReport.edge = candidates.front().getEdge(node_id);
+
+			candidateLevel = msg.level;
+
+			// if leaf then report 
+			if(!isLeader && trees.size() == 1)
+			{
+				// REPORT to parent
+				Message report{ Message::MSG_REPORT,
+						begin.round + random_period(),
+						bufferedReport.edge,
+						candidateLevel };
+					
+    			    	bufferedReport.send( myParent.getFd() );
+			}
 
     		    } break;
     		case Message::MSG_CONNECT: {
+			
+			//if ( bufferedReport.edge.myEdge(node_id) ) {
+			if ( bufferedReport.edge == candidates.front().getEdge(node_id) ) {// my edge, so establish connection
+    			    	Neighbor tree = candidates.front();    // new tree edge 
+    			    	trees.push_back( tree );             // INTO THE Component BFS Tree YOU GO!
+    				candidates.erase( candidates.begin() );
 
+				// send connect across the selected MWOE
+    			        Message connect{ Message::MSG_CONNECT2ME,
+    			        	          begin.round + random_period(),
+						  myComponent,
+    			    			  myLevel };
+    				connect.send( tree.getFd() );
+
+				// determine new componentId and root	
+				if( myLevel == candidateLevel ) { // Merge
+					if( ( isLeader = ( node_id < tree.getId() ) ) ) {
+						myComponent = Edge{ tree.getWeight(), 0, 0 };
+			
+						// prep the CHANGEROOT message
+						Message change{ Message::MSG_CHANGEROOT,
+								begin.round + random_period(),
+								myComponent,
+								myLevel };
+				
+						// send ChangeRoot
+						for(auto nbr : trees) {
+							change.send( nbr.getFd() );
+						}
+					}
+				}
+				//else { } // Absorb
+			}
+			else { 	// not mine, fwd the msg
+    				for( auto nbr : trees ) {
+    					msg.send( nbr.getFd() );
+    				}
+			}
+
+    		    } break;
+    		case Message::MSG_CONNECT2ME: {
+			// add edge to list of tree edges
+			Neighbor tree = neighbors[i];
+			trees.push_back( tree );
+
+			// remove edge from list of candidates
+			candidates.erase( remove( candidates.begin(), candidates.end(), tree), candidates.end() );
+
+			// prep the CHANGEROOT message
+			Message change{ Message::MSG_CHANGEROOT,
+					begin.round + random_period(),
+					myComponent,
+					myLevel };
+
+			if( myLevel == msg.level ) { // Merge
+				// determine new componentId and root	
+				if( ( isLeader = (node_id < tree.getId() ) ) ) {
+					myComponent = Edge{ tree.getWeight(), 0, 0 };
+				
+					// send ChangeRoot
+					for(auto nbr : trees) {
+						change.send( nbr.getFd() );
+					}
+				}
+			}
+			else { // Absorb
+				change.send( tree.getFd() );//only send CHANGEROOT to absorbed component
+			}
     		    } break;
     		/*
     		 * We got rejected (D'oh!)
@@ -276,8 +364,30 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
                     }
     		    } break;
     		case Message::MSG_CHANGEROOT: {
+			// reset the candidate MWOE level
+			candidateLevel = -1;
+
+			// set isLeader flag, componentId, level and parent
+			isLeader = false;
+			myComponent = msg.edge;
+			myLevel = msg.level;
+
+			myParent = neighbors[i];
+
+			// fwd CHANGEROOT to children
+			Message change{ Message::MSG_CHANGEROOT,
+					begin.round + random_period(),
+					myComponent,
+					myLevel };
+					
+			for(auto nbr : trees) {
+				if(nbr !=  myParent) {
+					change.send( nbr.getFd() );
+				}
+			}
 
     		    } break;
+
     		default:
     		    break;
     		}

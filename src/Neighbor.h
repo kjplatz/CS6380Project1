@@ -48,6 +48,14 @@ public:
 		return (weight > n.weight) || (id > n.id);
 	}
 
+	bool operator==( const Neighbor& n ) const {
+		return (weight == n.weight) && (id == n.id) && (fd == n.fd);
+	}
+
+	bool operator!=( const Neighbor& n ) const {
+		return (weight != n.weight) || (id != n.id) || (fd != n.fd);
+	}
+
 	std::string to_string() const {
 		return std::to_string(id) + std::string{ " <" } +
 			   std::to_string(weight) + std::string{ ">"};
