@@ -58,6 +58,7 @@
 
 #include "CS6380Project2.h"
 #include "Neighbor.h"
+#include "Node.h"
 
 using namespace std;
 
@@ -67,6 +68,7 @@ int main( int argc, char** argv ) {
     int numNodes;
     vector<vector<float>> neighborWts;
     vector<int> nodeIds;
+    vector<Node*> nodes;
 
     if ( argc == 1 ) {
         cerr << "Error: usage: " << argv[0] << " <cfg_file>" << endl;
@@ -166,9 +168,11 @@ int main( int argc, char** argv ) {
             }
         }
 
+        Node *n = new Node( nodeIds[i], master_fd, neighbors[i] );
+        nodes.push_back( n );
         //
         // Spawn a new thread and push it back into the thread vector array...
-        threads.push_back( new thread( run_node, nodeIds[i], master_fd, neighbors[i] ) );
+        threads.push_back( new thread( &Node::run, n ) );
     }
 
     int round=0;

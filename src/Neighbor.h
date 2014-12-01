@@ -25,10 +25,13 @@ class Neighbor {
 public:
 	Neighbor( int i, int f, float w ) :
 		id(i), fd(f), weight(w), edgeType(EDGE_CANDIDATE), responded(false) {};
+
+	Neighbor() = delete;
 	Neighbor( const Neighbor& ) = default;
 	Neighbor( Neighbor&& ) = default;
 
 	Neighbor& operator=( const Neighbor& ) = default;
+	Neighbor& operator=( Neighbor&& ) = default;
 
 	Edge getEdge( const int me ) const {
 		return Edge{ me, id, weight };

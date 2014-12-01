@@ -8,6 +8,7 @@
  *      Brian Snedic
  */
 
+#if 0
 #include <algorithm>
 #include <chrono>
 #include <cstring>
@@ -43,7 +44,7 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
 	bool isLeader = true;                     // Am I the leader of my component?  (Initially yes)
 	Edge myComponent = Edge{ node_id, 0, 0 }; // What is the ID of my component? (Initially me)
 	int  myLevel = 0;                         // What level is my component? (Initially 0)
-	int candidateLevel = -1;			  // What level is my candidate MWOE? (Initially -1 i.e. no candidate yet)
+	int candidateLevel = -1;			      // What level is my candidate MWOE? (Initially -1 i.e. no candidate yet)
 			//TODO: determine new componentId and root	
 	Neighbor myParent = Neighbor{ 0, 0, 0 };  // Who is my parent in the MST?
 
@@ -593,3 +594,4 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
     }
 #endif
 }
+#endif
