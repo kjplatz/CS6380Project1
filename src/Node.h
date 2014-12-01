@@ -47,13 +47,43 @@ class Node {
     std::ofstream fout;
 
     Message bufferedReport;            // Buffered report message
+    Message sentConnect;               // If we've got an outstanding Connect2Me message
 
     std::mt19937 generator;
 	std::uniform_int_distribution<int> distribution;
 
 	void queueIncoming();              // Process incoming messages and place into queues
-	void processTest(const Neighbor& nbr, const Message& msg);        // Process test message...
-	void processInitiate( const Neighbor& nbr, const Message& msg );  // Process initiate message
+
+	// Convergecast messages to the root if necessary..
+	void doConvergecast();
+
+	// Send a connect2Me message, and do other stuff if necessary...
+	void sendConnect2Me();
+
+	// Report back to the main thread...
+	void doReport();
+
+	// Start a new phase
+	void initiatePhase();
+
+	// Handle any outstanding connection requests...
+	void processConnectQ();
+
+	// Handle any outstanding test requests...
+	void processTestQ();
+
+	// Create a new component (and go up in level)
+	void createNewComponent( const Neighbor& nbr );
+
+	// Handle each message type
+	void processAccept( const Neighbor& nbr, const Message& msg );
+	void processChangeRoot( const Neighbor& nbr, const Message& msg );
+	void processConnect( const Neighbor& nbr, const Message& msg );
+	void processConnect2Me( const Neighbor& nbr, const Message& msg );
+	void processInitiate( const Neighbor& nbr, const Message& msg );
+	void processReject( const Neighbor& nbr, const Message& msg );
+	void processReport( const Neighbor& nbr, const Message& msg );
+	void processTest(const Neighbor& nbr, const Message& msg);
 public:
     Node() = delete;
     Node( Node&& ) = default;

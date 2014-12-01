@@ -1,0 +1,45 @@
+My review of "Efficient GPU Implementation for Single Block Orthogonal Dictionary Learning"
+
+Key Contributions:
+    The author designed an efficient OpenCL implementation of the known SBO (Single Block Orthogonal) dictionary learning algorithm.  The tested implemention appears to perform considerably faster than a CPU-based implementation by a constant factor.
+
+Suggestions for improvement:
+
+The abstract and introduction should be written at an undergraduate level.  The introduction should spend some more time explaining "what are sparse representations, and why should you should care about them."  Remember, everyone reading this paper may not have a strong background in signals processing.  
+
+Also, the introduction should (briefly) explain the concepts of GPGPU computing and OpenCL, since these are central to the contribution of the paper.
+
+Have other algorithms, such as K-SVD, AK-SVD, and UONB been attempted in a GPGPU environment? 
+
+Briefly describe the map-reduce model.
+
+What is the impact of the perceived inefficiencies in AMD's BLAS implementation?
+
+You compare your implementation against PAK-SVD, but make zero mention of it anywhere else in your paper.  What is it and how does it differ SBO?
+
+How does the "Numerical Recipes" based version of SBO differ from Algorithm 2?  Citation needed.
+
+At the end of your introduction, make a clear and convincing argument as to why this paper is worth reading.
+
+Comments to TPC:
+The paper was extremely hard to read, and the author was introducing new terms and acronyms without any explanation.  I felt the paper provided very little introduction and background, and did not make a clear case for its importance.  
+
+Award Quality?
+No.
+
+Significance:
+Below average
+
+Originality/Novelty:
+Below average
+
+Quality of Presentation:
+Poor
+
+Expertise: 
+Little familiarity
+
+Overall Recommendation:
+Reject
+
+

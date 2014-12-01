@@ -158,8 +158,8 @@ int main( int argc, char** argv ) {
                 //neighbor_fds[i].push_back( sockpair[0] );
                 //neighbor_fds[j].push_back( sockpair[1] );
 
-                neighbors[i].push_back( Neighbor{ j, sockpair[0], neighborWts[i][j]} );
-                neighbors[j].push_back( Neighbor{ i, sockpair[1], neighborWts[i][j]} );
+                neighbors[i].push_back( Neighbor{ nodeIds[j], sockpair[0], neighborWts[i][j]} );
+                neighbors[j].push_back( Neighbor{ nodeIds[i], sockpair[1], neighborWts[i][j]} );
                 verbose && cout << "Creating socketpair [" << sockpair[0] << ", " << sockpair[1] << "] for nodes "
                                 << i << " <-> " << j << endl;
 

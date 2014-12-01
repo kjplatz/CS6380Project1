@@ -71,6 +71,16 @@ public:
 			   std::string{ " >" };
         return str;
     }
+
+    float getWeight() const { return weight; }
+
+    bool isMine( int node ) const {
+    	return v1 == node || v2 == node;
+    }
+
+    bool getOther( int node ) const {
+    	return (v2 == node) ? v1 : v2;
+    }
 };
 
 #endif /* SRC_EDGE_H_ */

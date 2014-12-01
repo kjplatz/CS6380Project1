@@ -25,14 +25,14 @@ using namespace std;
 // Move constructor
 
 Message::Message( Message&& m ) :
-	msgType( m.msgType ), round(m.round), level(m.level), edge(m.edge) {
+	msgType( m.msgType ), round(m.round), level(m.level), edge(m.edge), sentBy(m.sentBy) {
     m.msgType = MSG_NULL;
     m.round = -1;
 }
 
 
 // Read a message from file descriptor <fd>
-Message::Message( int fd ) {
+Message::Message( int fd ) :  sentBy{-1,-1,-1} {
     memset( buf, sizeof(buf), 0 );
 
     if ( (rcvd = recvfrom( fd, buf, 1023, 0, nullptr, nullptr )) < 0 ) {
@@ -123,7 +123,7 @@ string Message::toString() const {
     	return str;
     case MSG_CONNECT2ME:
     	str = string{"CONNECT2ME "} + to_string( round )
-		      + string{" "} + edge.to_string();
+		      + string{" "} + edge.to_string() + string{" "} + to_string(level);
     	return str;
     case MSG_REPORT:
     	str = string{"REPORT "} + to_string( round )

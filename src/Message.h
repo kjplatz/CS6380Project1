@@ -13,6 +13,7 @@
 
 #include <string>
 #include "Edge.h"
+#include "Neighbor.h"
 /*
  * class Message:
  *     This creates an abstraction of a Message that can be sent and
@@ -44,7 +45,9 @@ public:
     int  level;
     Edge edge;
 
-    Message() : msgType(MSG_NULL) {};
+    Neighbor sentBy;
+
+    Message() : msgType(MSG_NULL), round(0), level(0), sentBy{-1,-1,-1} {};
     Message( const Message& ) = default;
     Message( Message&& );
 
@@ -55,11 +58,11 @@ public:
 
     // Create a message
     Message( enum MsgType mt, int _r=-1 ) :
-    	msgType(mt), round(_r), level(0), edge() {};
+    	msgType(mt), round(_r), level(0), edge(), sentBy{-1,-1,-1} {};
     Message( enum MsgType mt, int r, Edge e, int l=0 )
-        : msgType(mt), round(r), level(l), edge(e) {};
+        : msgType(mt), round(r), level(l), edge(e), sentBy{-1,-1,-1} {};
     Message( enum MsgType mt, Edge e, int l=0 ) :
-        msgType(mt), round(), level(l), edge(e) {};
+        msgType(mt), round(), level(l), edge(e), sentBy{-1,-1,-1} {};
 
     // Send this message to the named file descriptor
     int send( int fd );
