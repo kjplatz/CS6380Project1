@@ -219,7 +219,7 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
     			    // TODO -- If we have no candidates and no tree edges, send the message back up the tree...
     		    } break;
     		case Message::MSG_REPORT: {
-    			    if ( bufferedReport.edge < msg.edge ) {
+    			    if ( bufferedReport.edge > msg.edge ) {
     			    	bufferedReport = msg;
     			    }
     			    for( auto nbr : trees ) {
@@ -239,13 +239,18 @@ void run_node(int node_id, int master_fd, vector<Neighbor> neighbors ) {
                     // TODO -- what to do if I'm the leader?
     		    } break;
     		case Message::MSG_ACCEPT: {
-			// store the edge to be reported
-			bufferedReport.round = begin.round + random_period();
-			bufferedReport.edge = candidates.front().getEdge(node_id);
-
+			Edge myCandidate = candidates.front().getEdge(node_id);
+			
+			// compare accepted edge to any previously reported
+    			if ( bufferedReport.edge > myCandidate ) {
+				// store the edge to be reported
+				bufferedReport.round = begin.round + random_period();
+				bufferedReport.edge = myCandidate;
+			}
+			
 			candidateLevel = msg.level;
 
-			// if leaf then report 
+			// if leaf then report
 			if(!isLeader && trees.size() == 1)
 			{
 				// REPORT to parent
