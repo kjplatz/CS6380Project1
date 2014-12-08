@@ -124,7 +124,7 @@ void Node::queueIncoming() {
 	do {
 	    for( auto nbr : neighbors ) {
 		    FD_SET( nbr.getFd(), &fdSet );
-		    fout << "DEBUG: Enabling select for " << nbr.getId() << "'s FD " << nbr.getFd() << endl;
+//		    fout << "DEBUG: Enabling select for " << nbr.getId() << "'s FD " << nbr.getFd() << endl;
 		    maxFd = max( maxFd, nbr.getFd() + 1 );
 	    }
 	    struct timeval timeout = { 0, 0 };
@@ -133,7 +133,7 @@ void Node::queueIncoming() {
 	    nodesReady = select( maxFd, &fdSet, nullptr, nullptr, &timeout );
 	    for( unsigned i=0; i<neighbors.size(); i++ ) {
 	    	if ( FD_ISSET( neighbors[i].getFd(), &fdSet )) {
-	                fout << "DEBUG: Found message on " << neighbors[i].getId() << "'s FD " << neighbors[i].getFd() << endl;
+//	                fout << "DEBUG: Found message on " << neighbors[i].getId() << "'s FD " << neighbors[i].getFd() << endl;
 
 	    		// Read incoming message
 	    		Message msg( neighbors[i].getFd() );
@@ -144,7 +144,7 @@ void Node::queueIncoming() {
 	    		// Push to appropriate queue
 	    		msgQs[i].push( msg );
 	    	} else {
-	                fout << "DEBUG: NO MESSAGE on " << neighbors[i].getId() << "'s FD " << neighbors[i].getFd() << endl;
+//	                fout << "DEBUG: NO MESSAGE on " << neighbors[i].getId() << "'s FD " << neighbors[i].getFd() << endl;
 	    	}
 	    }
 	} while ( nodesReady > 0 );
@@ -169,15 +169,26 @@ void Node::processAccept( const Neighbor& nbr, const Message& msg ) {
  * We've been chrooted!!! Aaaaah!!!
  */
 void Node::processChangeRoot( const Neighbor& nbr, const Message& msg ) {
+	fout << "Processing CHANGEROOT from " << nbr.getId() << endl;
     bool isTree = false;
     for( auto t : trees ) {
-    	if ( nbr == t ) isTree = true;
+    	if ( nbr.getId() == t.getId() ) isTree = true;
     }
-    if ( !isTree ) trees.push_back( nbr );
+    if ( !isTree ) {
+    	trees.push_back( nbr );
+    	for( auto it = candidates.begin(); it < candidates.end(); it++ ) {
+    		if ( *it == nbr ) candidates.erase( it );
+    	}
+    }
+
     myParent = nbr;
     myComponent = msg.edge;
     myLevel = msg.level;
+    isLeader = false;
     fout << "I got CHROOTED to level " << myLevel << endl;
+    fout << "    New parent = " << nbr.getId() << endl;
+    fout << "    New component = " << myComponent.to_string() << endl;
+    fout << "    I'm NOT the leader anymore.  This makes me sad..." << endl;
     Message chroot{ msg };
     for( auto t : trees ) {
     	if ( t == myParent ) continue;
@@ -187,12 +198,21 @@ void Node::processChangeRoot( const Neighbor& nbr, const Message& msg ) {
     		 << chroot.toString() << endl;
     }
 
-    bufferedReport = nullReport;
-    hasSentTest = false;
-    sentConnect = Message{Message::MSG_NULL};
+    // If there's a pending Connect2Me message from this guy, remove from the queue.
+    for( auto it = connectQ.begin(); it < connectQ.end(); it++ ) {
+    	if ( it->sentBy == nbr ) {
+    		connectQ.erase( it );
+    	}
+    }
+
+    bufferedReport = nullReport;               // Nothing to report yet...
+    hasSentTest = false;                       // And I haven't sent a TEST message
+    sentConnect = Message{Message::MSG_NULL};  // Nor have I sent a CONNECT2ME message
 
     // Handle any outstanding TEST or CONNECT requests that we may be able to deal with now.
+    fout << ">> Processing Buffered TEST Messages <<" << endl;
     processTestQ();
+    fout << ">> Processing Buffered CONNECT2ME Messages <<" << endl;
     processConnectQ();
 }
 /*
@@ -219,9 +239,15 @@ void Node::processConnect( const Neighbor& nbr, const Message& msg ) {
  * We got rejected!  How sad...
  */
 void Node::processReject( const Neighbor& nbr, const Message& msg ) {
-	Neighbor youreject = candidates.front();   // YOU GOT REJECTED!
-	candidates.erase( candidates.begin() );    // YOU'RE NO CANDIDATE!
-	rejects.push_back( youreject );            // INTO THE REJECT PILE YOU GO!
+	fout << "Node " << nbr.getId() << " has rejected us..." << endl;
+	for( auto it = candidates.begin(); it < candidates.end(); it++ ) {
+		if ( *it == nbr ) {
+			candidates.erase( it );
+			rejects.push_back( nbr );
+		}
+	}
+
+//	fout << "New candidate size = " << candidates.size() << endl;
 	if ( candidates.empty() ) {
 		hasSentTest = false;
 		doConvergecast();
@@ -244,8 +270,11 @@ void Node::processReport( const Neighbor& nbr, const Message& msg ) {
     	bufferedReport = msg;
     	bufferedReport.level = myId;
     }
-    for( auto n : trees ) {
-    	if ( n == nbr ) n.setResponded();
+    for( auto it = trees.begin(); it < trees.end(); it++ ) {
+    	if ( *it == nbr ) {
+    		fout << "Node " << it->getId() << " has responded now." << endl;
+    		it->setResponded();
+    	}
     }
     doConvergecast();
 }
@@ -255,6 +284,7 @@ void Node::processReport( const Neighbor& nbr, const Message& msg ) {
  * Handle a "test" message
  */
 void Node::processTest( const Neighbor& nbr, const Message& msg ) {
+//	fout << "Processsing Test: " << msg.getBuf() << " [ " << msg.toString() << " ] " << endl;
     /*
      * Case 1: myLevel < msgLevel -- buffer the message
      */
@@ -296,11 +326,12 @@ void Node::processTest( const Neighbor& nbr, const Message& msg ) {
  *     Second, we must start sending out TEST messages...
  */
 void Node::processInitiate( const Neighbor& nbr, const Message& msg ) {
-	verbose && fout << "Let's get this round started, baby!" << endl;
+	fout << "Let's get this round started, baby!" << endl;
     // Forward the message to all tree nodes
     // And clear the "responded" flag...
     for( auto nbr : trees ) {
-     	verbose && fout << "   Node " << nbr.getId()
+    	if ( nbr == myParent ) continue;
+     	fout << "   Node " << nbr.getId()
        			        << ": Dude!! Wake up and begin!!" << endl;
      	Message fwd{ msg };
         fwd.round = round + distribution(generator);
@@ -313,18 +344,18 @@ void Node::processInitiate( const Neighbor& nbr, const Message& msg ) {
     // If we have at least one candidate edge, send out a TEST message
     if ( !candidates.empty() ) {
         // Send a TEST message to the best candidate...
-    	std::sort( candidates.begin(), candidates.end() );
+//    	std::sort( candidates.begin(), candidates.end() );
     	Message test{ Message::MSG_TEST,
     		          round + distribution(generator),
 					  myComponent,
     			      myLevel };
         test.send( candidates.front().getFd() );
     	hasSentTest = true;
-    	verbose && fout << "    Node " << candidates.front().getId()
+    	fout << "    Node " << candidates.front().getId()
     	   		        << ": " << test.toString() << endl;
     } else if ( trees.empty() ||
-    		    (trees.size() == 1 &&
-				 trees.at(0) == myParent ) ) {
+    		    ( trees.size() == 1 &&
+				  trees.at(0) == myParent ) ) {
     	// If our only "Tree" node is our parent, go ahead and send the
     	// nullReport back up the tree.
     	bufferedReport.round = round + distribution(generator);
@@ -344,14 +375,19 @@ void Node::doConvergecast() {
     bool phaseDone = true;
     for( auto nbr : trees ) {
     	if ( nbr == myParent ) continue;
+//    	fout << "doConvergecast: Node " << nbr.getId() << ": " << nbr.hasResponded() << endl;
     	phaseDone = phaseDone && nbr.hasResponded();
     }
+
+    fout << "phaseDone is " << phaseDone << endl;
 
     /*
      * Okay, we've received responses from everyone who we are waiting on...
      */
     if ( phaseDone ) {
     	if ( isLeader ) {
+    		fout << "Phase is done..." << endl;
+    		fout << "Best report is: " << bufferedReport.toString() << endl;
     		// If I'm the leader, and we haven't found a new outgoing edge
     		// we're done.  Yay!!!
     	    if ( bufferedReport.edge.getWeight() >=
@@ -359,10 +395,12 @@ void Node::doConvergecast() {
     	    	Message done{ Message::MSG_DONE, round };
     	    	done.send( masterFd );
     	    } else if ( bufferedReport.level == myId ) {
+    	    	fout << "Best report is mine.  Sending Connect2Me" << endl;
     	    	// Send a CONNECT2ME message
     	    	// This is handled elsewhere, since it may trigger multiple things
                 sendConnect2Me();
     	    } else {
+    	    	fout << "Propagating a CONNECT message" << endl;
     	    	Message connect{ Message::MSG_CONNECT,
     	    		             round,
 								 bufferedReport.edge,
@@ -370,9 +408,11 @@ void Node::doConvergecast() {
     	    	for( auto nbr : trees ) {
     	    		connect.round = round + distribution(generator);
     	    		connect.send( nbr.getFd() );
+    	    		fout << "Sending to " << nbr.getId() << ": " << connect.toString() << endl;
     	    	}
     	    }
     	} else {
+    		fout << "Sending a REPORT up the tree." << endl;
     		// We're not the leader.
     		// Just propagate the report up the tree.
     		bufferedReport.round = round + distribution(generator);
@@ -416,18 +456,18 @@ void Node::initiatePhase() {
 // Send a connect2me message:
 void Node::sendConnect2Me() {
 	auto nbr = candidates.front();
-
-	// Create the message and send it.
-	sentConnect = Message { Message::MSG_CONNECT2ME,
-		          round + distribution(generator),
-				  bufferedReport.edge,
-				  myLevel };
-	sentConnect.sentBy = nbr; //WAS MISSING: sentBy used to store sentTo in this case to be used when determining if MERGE or ABSORB operation
-
-	sentConnect.send( nbr.getFd() );
-	fout << "Sending to node " << nbr.getId() << ": "
-		 << sentConnect.toString() << endl;
-
+//
+//	// Create the message and send it.
+//	sentConnect = Message { Message::MSG_CONNECT2ME,
+//		          round + distribution(generator),
+//				  bufferedReport.edge,
+//				  myLevel };
+//	sentConnect.sentBy = nbr; //WAS MISSING: sentBy used to store sentTo in this case to be used when determining if MERGE or ABSORB operation
+//
+//	sentConnect.send( nbr.getFd() );
+//	fout << "Sending to node " << nbr.getId() << ": "
+//		 << sentConnect.toString() << endl;
+//
 	// Check to see if we've received a C2Me message from the other
 	// guy.
 	int foundCmsg = -1;
@@ -435,13 +475,25 @@ void Node::sendConnect2Me() {
 		if ( connectQ[i].sentBy == nbr ) foundCmsg = i;
 	}
 
-	if ( foundCmsg < 0 ) return;
-	auto cmsg = connectQ[foundCmsg];
+	if ( foundCmsg >= 0 ) {
+	    auto cmsg = connectQ[foundCmsg];
 
-	fout << "Already received a Connect2Me message from this guy..." << endl;
-	if ( cmsg.level == myLevel && myId < nbr.getId() ) {
-		connectQ.erase( connectQ.begin() + foundCmsg );
-		createNewComponent( nbr );
+	    fout << "Already received a Connect2Me message from this guy..." << endl;
+	    if ( cmsg.level == myLevel && myId < nbr.getId() ) {
+		    connectQ.erase( connectQ.begin() + foundCmsg );
+		    createNewComponent( nbr );
+	    }
+	} else {
+		// Create the message and send it.
+		sentConnect = Message { Message::MSG_CONNECT2ME,
+			          round + distribution(generator),
+					  bufferedReport.edge,
+					  myLevel };
+		sentConnect.sentBy = nbr; //WAS MISSING: sentBy used to store sentTo in this case to be used when determining if MERGE or ABSORB operation
+
+		sentConnect.send( nbr.getFd() );
+		fout << "Sending to node " << nbr.getId() << ": "
+			 << sentConnect.toString() << endl;
 	}
 }
 
@@ -478,6 +530,7 @@ void Node::processConnectQ() {
 
 void Node::processConnect2Me( const Neighbor& nbr, const Message& msg ) {
 	//DEBUG //fout << "\tHERE!!!! ProcessConnect2Me\n\t\tnbrId: " << nbr.getId() << "\n\t\tsentBy: " << sentConnect.sentBy.getId() << endl;
+
 	if ( msg.level == myLevel ) {
 		if ( sentConnect.sentBy.getId() == nbr.getId() && myId < nbr.getId() ) {
 			createNewComponent( nbr );
@@ -487,6 +540,11 @@ void Node::processConnect2Me( const Neighbor& nbr, const Message& msg ) {
 		return;
 	}
 
+	if ( msg.level > myLevel ) {
+		cerr << "Error!!  msg.level > myLevel" << endl;
+		abort();
+	}
+	// Level is smaller than mine...
     for( unsigned i=0; i<candidates.size(); i++ ) {
     	if ( candidates[i] == nbr ) {
     		candidates.erase( candidates.begin() + i );
@@ -518,7 +576,9 @@ void Node::createNewComponent( const Neighbor& nbr ) {
 	isLeader = true;
 	myComponent = nbr.getEdge(myId);
 
-	candidates.erase( candidates.begin() );
+	for( auto it = candidates.begin(); it < candidates.end(); it++ ) {
+		if ( *it == nbr ) candidates.erase( it );
+	}
 	trees.push_back( nbr );
 	myParent = Neighbor{ -1, -1, -1 };
 
@@ -536,11 +596,14 @@ void Node::createNewComponent( const Neighbor& nbr ) {
 
 	sentConnect = Message{Message::MSG_NULL};
 
-	// Handle any outstanding test messages...
-	processTestQ();
 
 	// Handle any outstanding connection requests...
+	fout << ">> Processing Connects <<" << endl;
 	processConnectQ();
+
+	// Handle any outstanding test messages...
+	fout << ">> Processing Tests <<" << endl;
+	processTestQ();
 
 	sentConnect = Message{Message::MSG_NULL};
 	initiatePhase();

@@ -79,7 +79,7 @@ Message::Message( int fd ) :  sentBy{-1,-1,-1} {
 			 msgType == MSG_REJECT ||
 			 msgType == MSG_REPORT ||
 			 msgType == MSG_CHANGEROOT) {
-        	is >> level;
+        	is >> c >> level;
         }
     }
 }
@@ -90,9 +90,9 @@ int Message::send(int fd) {
     string str = this->toString() + '\n';
     
     int out = ::send( fd, str.c_str(), str.length(), 0 );
-    ostringstream os;
-    os << "Message::send() sent " << out << " bytes to FD " << fd << ": " << str.c_str() << endl;
-    cerr << os.str();
+//    ostringstream os;
+//    os << "Message::send() sent " << out << " bytes to FD " << fd << ": " << str.c_str() << endl;
+//    cerr << os.str();
     return out;
 }
 
