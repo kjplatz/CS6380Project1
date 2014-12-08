@@ -85,7 +85,7 @@ int main( int argc, char** argv ) {
         cout << "Node " << i << " has ID: " << nodeIds[i] << endl;
         cout << "    -- Neighbors: ";
         for( unsigned j=0; j<neighborWts[i].size(); j++ ) {
-            if ( neighborWts[i][j] ) cout << j << " <" << neighborWts[i][j] << "> ";
+            if ( neighborWts[i][j] ) cout << nodeIds[j] << " <" << neighborWts[i][j] << "> ";
         }
         cout << endl;
     }
