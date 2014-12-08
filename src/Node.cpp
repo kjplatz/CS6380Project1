@@ -496,6 +496,22 @@ void Node::sendConnect2Me() {
 		    connectQ.erase( connectQ.begin() + foundCmsg );
 		    createNewComponent( nbr );
 	    }
+
+	    //TODO: BUG FIX - Must send the connect message still if you are
+	    //not going to be the leader in order for the leader to realize
+	    //its a MERGE and to handle accordingly
+	     else {
+		    // Create the message and send it.
+		  sentConnect = Message { Message::MSG_CONNECT2ME,
+				    round + distribution(generator),
+					    bufferedReport.edge,
+					    myLevel };
+		  sentConnect.sentBy = nbr; //WAS MISSING: sentBy used to store sentTo in this case to be used when determining if MERGE or ABSORB operation
+
+		  sentConnect.send( nbr.getFd() );
+		  fout << "Sending to node " << nbr.getId() << ": "
+			   << sentConnect.toString() << endl;
+	  }
 	} else {
 		// Create the message and send it.
 		sentConnect = Message { Message::MSG_CONNECT2ME,
