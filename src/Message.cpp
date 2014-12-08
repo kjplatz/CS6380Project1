@@ -85,9 +85,13 @@ Message::Message( int fd ) :  sentBy{-1,-1,-1} {
 }
 
 // Send a message to a file descriptor
+// DEBUG DEBUG DEBUG
 int Message::send(int fd) {
     string str = this->toString() + '\n';
-    return ::send( fd, str.c_str(), str.length(), 0 );
+    
+    int out = ::send( fd, str.c_str(), str.length(), 0 );
+    cerr << "Message::send() sent " << out << " bytes to FD " << fd << ": " << str.c_str() << endl;
+    return out;
 }
 
 // Utility function to convert a message into a human-readable string
