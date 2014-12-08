@@ -124,7 +124,7 @@ void Node::queueIncoming() {
 	do {
 	    for( auto nbr : neighbors ) {
 		    FD_SET( nbr.getFd(), &fdSet );
-		    fout << "DEBUG: Enabling select for " << neighbors.getId() << "'s FD " << neighbors.getFd() << endl;
+		    fout << "DEBUG: Enabling select for " << nbr.getId() << "'s FD " << nbr.getFd() << endl;
 		    maxFd = max( maxFd, nbr.getFd() );
 	    }
 	    struct timeval timeout = { 0, 0 };
@@ -133,7 +133,7 @@ void Node::queueIncoming() {
 	    nodesReady = select( maxFd, &fdSet, nullptr, nullptr, &timeout );
 	    for( unsigned i=0; i<neighbors.size(); i++ ) {
 	    	if ( FD_ISSET( neighbors[i].getFd(), &fdSet )) {
-	                fout << "DEBUG: Found message on " << neighbors.getId() << "'s FD " << neighbors.getFd() << endl;
+	                fout << "DEBUG: Found message on " << neighbors[i].getId() << "'s FD " << neighbors[i].getFd() << endl;
 
 	    		// Read incoming message
 	    		Message msg( neighbors[i].getFd() );
