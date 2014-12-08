@@ -25,7 +25,7 @@ Node::Node( int _myId, int mfd, vector<Neighbor> nbrs ) :
     myParent(-1,-1,-1), myId(_myId), myComponent( Edge{myId, 0, 0} ),
 	masterFd(mfd), neighbors( std::move( nbrs ) ),
 	fout(string {"node"} + to_string(myId) + string {".log"}),
-	distribution(1, 20) {
+	distribution(1,1) { //20) { //TODO: change this back to 20 from 1, 1 is for testing only
     // Create a seed for the PRNG...
     unsigned seed = chrono::system_clock::now().time_since_epoch().count();
     seed += myId;
@@ -417,6 +417,7 @@ void Node::sendConnect2Me() {
 		          round + distribution(generator),
 				  bufferedReport.edge,
 				  myLevel };
+	sentConnect.sentBy = nbr; //WAS MISSING: sentBy used to store sentTo in this case to be used when determining if MERGE or ABSORB operation
 
 	sentConnect.send( nbr.getFd() );
 	fout << "Sending to node " << nbr.getId() << ": "
@@ -471,8 +472,9 @@ void Node::processConnectQ() {
 }
 
 void Node::processConnect2Me( const Neighbor& nbr, const Message& msg ) {
+	//DEBUG //fout << "\tHERE!!!! ProcessConnect2Me\n\t\tnbrId: " << nbr.getId() << "\n\t\tsentBy: " << sentConnect.sentBy.getId() << endl;
 	if ( msg.level == myLevel ) {
-		if ( sentConnect.sentBy == nbr && myId < nbr.getId() ) {
+		if ( sentConnect.sentBy.getId() == nbr.getId() && myId < nbr.getId() ) {
 			createNewComponent( nbr );
 		} else {
 		    connectQ.push_back( msg );
