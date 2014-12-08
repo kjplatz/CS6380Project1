@@ -143,6 +143,8 @@ void Node::queueIncoming() {
 	    		msg.sentBy = neighbors[i];
 	    		// Push to appropriate queue
 	    		msgQs[i].push( msg );
+	    	} else {
+	                fout << "DEBUG: NO MESSAGE on " << neighbors[i].getId() << "'s FD " << neighbors[i].getFd() << endl;
 	    	}
 	    }
 	} while ( nodesReady > 0 );
