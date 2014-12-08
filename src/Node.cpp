@@ -307,8 +307,6 @@ void Node::processTest( const Neighbor& nbr, const Message& msg ) {
 	 * Case 3: Component is the same as mine -- send "Reject"
 	 */
 	} else {
-		verbose && fout << " (rejecting...)" << endl;
-
 		Message reject{ Message::MSG_REJECT,
 			            round + distribution(generator),
 						msg.edge,
@@ -316,6 +314,14 @@ void Node::processTest( const Neighbor& nbr, const Message& msg ) {
 		reject.send( nbr.getFd() );
 		fout << "Sending to node " << nbr.getId() <<": "<<
 			    reject.toString() << endl;
+
+		// And we can also add that particular neighbor to our own rejects list.
+		for( auto it = candidates.begin(); it < candidates.end(); it++ ) {
+			if ( *it == nbr ) {
+				candidates.erase( it );
+				rejects.push_back( nbr );
+			}
+		}
 	}
 }
 
@@ -579,6 +585,7 @@ void Node::createNewComponent( const Neighbor& nbr ) {
 	for( auto it = candidates.begin(); it < candidates.end(); it++ ) {
 		if ( *it == nbr ) candidates.erase( it );
 	}
+
 	trees.push_back( nbr );
 	myParent = Neighbor{ -1, -1, -1 };
 
