@@ -52,7 +52,7 @@ public:
 	}
 
 	bool operator==( const Neighbor& n ) const {
-		return (weight == n.weight) && (id == n.id) && (fd == n.fd);
+		return id == n.id;
 	}
 
 	bool operator!=( const Neighbor& n ) const {

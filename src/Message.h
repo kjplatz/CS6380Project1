@@ -69,6 +69,8 @@ public:
 
     // Generate a string representation of this message
     std::string toString() const;
+
+    std::string getBuf() const { return std::string{buf}; }
 };
 
 
