@@ -76,6 +76,7 @@ Message::Message( int fd ) :  sentBy{-1,-1,-1} {
         if ( msgType == MSG_TEST ||
         	 msgType == MSG_ACCEPT ||
         	 msgType == MSG_CONNECT2ME ||
+			 msgType == MSG_CONNECT ||
 			 msgType == MSG_REJECT ||
 			 msgType == MSG_REPORT ||
 			 msgType == MSG_CHANGEROOT) {

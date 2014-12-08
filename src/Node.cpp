@@ -85,7 +85,7 @@ void Node::run() {
     		if ( msg.round > begin.round ) continue; // If we're not ready to deliver, skip
     		msgQs[i].pop();                          // Okay, we can deliver.  Pop from the head of the queue
 
-    		fout << "Processing message: " << msg.toString() << endl;
+    		fout << "Processing message from " << neighbors[i].getId() <<": " << msg.toString() << endl;
     		switch( msg.msgType ) {
     		case Message::MSG_ACCEPT:     processAccept(neighbors[i], msg ); break;
     		case Message::MSG_CHANGEROOT: processChangeRoot( neighbors[i], msg ); break;
@@ -156,7 +156,7 @@ void Node::queueIncoming() {
 void Node::processAccept( const Neighbor& nbr, const Message& msg ) {
 	// Is this edge the best we've seen so far?
 	if ( bufferedReport.edge > msg.edge ) {
-		bufferedReport = msg;
+		bufferedReport.edge = nbr.getEdge(myId);
 		bufferedReport.level = myId;
 	}
 	hasSentTest = false;
@@ -184,6 +184,7 @@ void Node::processChangeRoot( const Neighbor& nbr, const Message& msg ) {
     myParent = nbr;
     myComponent = msg.edge;
     myLevel = msg.level;
+    bufferedReport = nullReport;
     isLeader = false;
     fout << "I got CHROOTED to level " << myLevel << endl;
     fout << "    New parent = " << nbr.getId() << endl;
@@ -266,10 +267,13 @@ void Node::processReject( const Neighbor& nbr, const Message& msg ) {
  * One of our children is reporting its MWOE back up the tree...
  */
 void Node::processReport( const Neighbor& nbr, const Message& msg ) {
+	fout << "Processing REPORT from " << nbr.getId() << ": " << msg.toString() << endl;
+//    fout << "    bufferedReport is now: " << bufferedReport.toString() << endl;
     if ( bufferedReport.edge > msg.edge ) {
     	bufferedReport = msg;
-    	bufferedReport.level = myId;
+    	bufferedReport.level = msg.level;
     }
+//    fout << "    bufferedReport is now: " << bufferedReport.toString() << endl;
     for( auto it = trees.begin(); it < trees.end(); it++ ) {
     	if ( *it == nbr ) {
     		fout << "Node " << it->getId() << " has responded now." << endl;
@@ -385,8 +389,6 @@ void Node::doConvergecast() {
     	phaseDone = phaseDone && nbr.hasResponded();
     }
 
-    fout << "phaseDone is " << phaseDone << endl;
-
     /*
      * Okay, we've received responses from everyone who we are waiting on...
      */
@@ -398,7 +400,7 @@ void Node::doConvergecast() {
     		// we're done.  Yay!!!
     	    if ( bufferedReport.edge.getWeight() >=
     	         (float)numeric_limits<int>::max() ) {
-    	    	Message done{ Message::MSG_DONE, round };
+    	    	Message done{ Message::MSG_DONE, myId };
     	    	done.send( masterFd );
     	    } else if ( bufferedReport.level == myId ) {
     	    	fout << "Best report is mine.  Sending Connect2Me" << endl;
@@ -407,10 +409,8 @@ void Node::doConvergecast() {
                 sendConnect2Me();
     	    } else {
     	    	fout << "Propagating a CONNECT message" << endl;
-    	    	Message connect{ Message::MSG_CONNECT,
-    	    		             round,
-								 bufferedReport.edge,
-								 bufferedReport.level };
+    	    	Message connect{ bufferedReport };
+    	    	connect.msgType = Message::MSG_CONNECT;
     	    	for( auto nbr : trees ) {
     	    		connect.round = round + distribution(generator);
     	    		connect.send( nbr.getFd() );
@@ -431,6 +431,13 @@ void Node::doConvergecast() {
 
 // Report our subtree back to the main thread...
 void Node::doReport() {
+	for( auto t : trees ) {
+		if ( t == myParent ) continue;
+		Message msg{ Message::MSG_REPORT, t.getId() };
+		msg.send( masterFd );
+	}
+	Message done{ Message::MSG_DONE };
+	done.send( masterFd );
 	return;
 }
 
@@ -541,6 +548,7 @@ void Node::processConnect2Me( const Neighbor& nbr, const Message& msg ) {
 		if ( sentConnect.sentBy.getId() == nbr.getId() && myId < nbr.getId() ) {
 			createNewComponent( nbr );
 		} else {
+			fout << "Buffering connect: " << msg.toString() << endl;
 		    connectQ.push_back( msg );
 		}
 		return;
@@ -581,6 +589,7 @@ void Node::createNewComponent( const Neighbor& nbr ) {
 	fout << "==== I HAVE THE POWER (I'm the new leader) ====" << endl;
 	isLeader = true;
 	myComponent = nbr.getEdge(myId);
+	bufferedReport = nullReport;
 
 	for( auto it = candidates.begin(); it < candidates.end(); it++ ) {
 		if ( *it == nbr ) candidates.erase( it );

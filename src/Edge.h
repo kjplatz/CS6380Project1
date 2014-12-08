@@ -35,24 +35,24 @@ public:
     Edge& operator=( const Edge& ) = default;
 
     bool operator<( const Edge& e2 ) {
-    	return ( weight < e2.weight ) ||
-    		   ( v1 < e2.v1 ) ||
-			   ( v2 < e2.v2 );
+    	return ( weight == e2.weight ) ?
+    			    (( v1 == e2.v1 ) ? ( v2 < e2.v2 ) : ( v1 < e2.v1 )) :
+	    			( weight < e2.weight );
     }
     bool operator<=( const Edge& e2 ) {
-        return ( weight <= e2.weight ) ||
-        	   ( v1 <= e2.v1 ) ||
-    		   ( v2 <= e2.v2 );
+    	return ( weight == e2.weight ) ?
+    			    (( v1 == e2.v1 ) ? ( v2 <= e2.v2 ) : ( v1 < e2.v1 )) :
+	    			( weight < e2.weight );
     }
     bool operator>( const Edge& e2 ) {
-        return ( weight > e2.weight ) ||
-        	   ( v1 > e2.v1 ) ||
-    		   ( v2 > e2.v2 );
+    	return ( weight == e2.weight ) ?
+    			    (( v1 == e2.v1 ) ? ( v2 > e2.v2 ) : ( v1 > e2.v1 )) :
+					( weight > e2.weight );
     }
     bool operator>=( const Edge& e2 ) {
-        return ( weight >= e2.weight ) ||
-        	   ( v1 >= e2.v1 ) ||
-    		   ( v2 >= e2.v2 );
+    	return ( weight == e2.weight ) ?
+    			    (( v1 == e2.v1 ) ? ( v2 >= e2.v2 ) : ( v1 > e2.v1 )) :
+					( weight > e2.weight );
     }
     bool operator!=( const Edge& e2 ) {
         return ( weight != e2.weight ) ||

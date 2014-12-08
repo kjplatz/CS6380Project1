@@ -155,8 +155,6 @@ int main( int argc, char** argv ) {
 
                 // Add the appropriate file descriptors to process i's and j's neighbor
                 // lists.
-                //neighbor_fds[i].push_back( sockpair[0] );
-                //neighbor_fds[j].push_back( sockpair[1] );
 
                 neighbors[i].push_back( Neighbor{ nodeIds[j], sockpair[0], neighborWts[i][j]} );
                 neighbors[j].push_back( Neighbor{ nodeIds[i], sockpair[1], neighborWts[i][j]} );
@@ -173,13 +171,15 @@ int main( int argc, char** argv ) {
         //
         // Spawn a new thread and push it back into the thread vector array...
         threads.push_back( new thread( &Node::run, n ) );
+        threads.back()->detach();
     }
 
     int round=0;
     sleep(1);
 
     int leader = -1;
-    while( leader < 0 && round < 20 ) {
+    queue<int> bfsQ;
+    while( leader < 0 ) {
         round++;
         usleep(250000);
 
@@ -205,6 +205,7 @@ int main( int argc, char** argv ) {
             case Message::MSG_DONE:  // I know who the leader is.  Ignore me from here on out
                 cout << "Got message from fd " << master_fds[i] << ": " << msg.toString() << endl;
                 leader = msg.round;
+                bfsQ.push( leader );
                 break;
             // fall through
             case Message::MSG_ACK:    // I don't know, but I'm done with this round.
@@ -217,53 +218,34 @@ int main( int argc, char** argv ) {
                     msg.toString() );
             }
         }
-        cout << "Received DONE from " << doneCount << " threads." << endl;
+        cout << "Received ACK from " << doneCount << " threads." << endl;
     }
 
-    exit(1);
-
+    Message done{ Message::MSG_REPORT };
     cout << "got LEADER(" << leader << ")" << endl;
-
-    queue<int, list<int>> bfsQ;
-    bfsQ.push( leader );
-    Message leaderMsg { Message::MSG_DONE, leader };
-    string ignore;
     while( !bfsQ.empty() ) {
-        int node = bfsQ.front();
-
-        verbose && cout << "Popped node " << node << " from queue..." << endl;
+        int next = bfsQ.front();
         bfsQ.pop();
-        verbose && cout << "Queue length = " << bfsQ.size() << endl;
-        unsigned i=0;
-        verbose && cout << "Queue length = " << bfsQ.size() << endl;
-        while( nodeIds[i] != node && i < nodeIds.size() ) i++;
-        verbose && cout << "Node " << node << " is number " << i << endl;
 
-        int fd = master_fds[i];
-        verbose && cout << "Sending " << leaderMsg.toString() << " to node " << node << "[" << fd << "]" << endl;
-        leaderMsg.send( fd );
-        Message done( fd );
+        unsigned i;
+        for( i=0; i<nodeIds.size(); i++ ) {
+        	if ( nodeIds[i] == next ) break;
+        }
 
-        ifstream children("children.txt");
-
+        done.send( master_fds[i] );
+        cout << "Node " << next << " has children:";
+        bool gotDone = false;
         do {
-            children >> node;
-            if ( node != 0 ) {
-                verbose && cout << "Adding node " << node << endl;
-                bfsQ.push( node );
+            Message msg( master_fds[i] );
+            if ( msg.msgType == Message::MSG_REPORT ) {
+            	bfsQ.push( msg.round );
+            	cout << " " << msg.round;
+            } else if ( msg.msgType == Message::MSG_DONE ) {
+            	gotDone = true;
             }
-        } while( node != 0 );
-        children.close();
-
-        unlink( "children.txt" );
+        } while ( !gotDone );
+        cout << endl;
     }
-
-    for( auto thread : threads ) {
-        thread->detach();
-    }
-
-    cout << "All threads terminated... exiting" << endl;
-
 }
 
 
