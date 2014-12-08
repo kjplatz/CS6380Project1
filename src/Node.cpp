@@ -125,7 +125,7 @@ void Node::queueIncoming() {
 	    for( auto nbr : neighbors ) {
 		    FD_SET( nbr.getFd(), &fdSet );
 		    fout << "DEBUG: Enabling select for " << nbr.getId() << "'s FD " << nbr.getFd() << endl;
-		    maxFd = max( maxFd, nbr.getFd() );
+		    maxFd = max( maxFd, nbr.getFd() + 1 );
 	    }
 	    struct timeval timeout = { 0, 0 };
 
