@@ -365,15 +365,20 @@ void Node::processInitiate(const Neighbor& nbr, const Message& msg) {
 	fout << "Let's get this round started, baby!" << endl;
 	// Forward the message to all tree nodes
 	// And clear the "responded" flag...
-	for (auto nbr : trees) {
-		if (nbr == myParent)
+	for ( auto it = neighbors.begin(); it < neighbors.end(); it++ ) {
+		if ( *it == myParent)
 			continue;
-		fout << "   Node " << nbr.getId() << ": Dude!! Wake up and begin!!"
+		fout << "   Node " << it->getId() << ": Dude!! Wake up and begin!!"
 				<< endl;
 		Message fwd { msg };
 		fwd.round = round + distribution(generator);
 		fwd.send(nbr.getFd());
-		nbr.clearResponded();
+		it->clearResponded();
+	}
+
+	for( auto nbr : trees ) {
+		if ( nbr == myParent ) continue;
+		fout << ">>> Initiate:  Neighbor " << nbr.getId() << ": " << nbr.hasResponded() << endl;
 	}
 
 	bufferedReport = nullReport;
