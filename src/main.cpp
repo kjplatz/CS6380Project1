@@ -12,8 +12,8 @@
  * CS 6380 - Distributed Computing
  * Fall 2014
  *
- * Programming Assignment #1
- * This project implements the FloodMax leader election protocol
+ * Programming Assignment #2
+ * This project implements the AsyncGHS Minimum Spanning Tree protocol
  * in a general network.
  *
  * The program consists of three main portions:
@@ -27,12 +27,11 @@
  *         Creates a vector of threads to simulate the processes
  *         Runs the main control loop:
  *             - Sends a TICK to all processes
- *             - Waits for a DONE from all processes
- *             - If any process sends a LEADER message, it in turn sends
- *               that LEADER message to all processes to indicate successful
- *               termination.
+ *             - Waits for a ACK from all processes
+ *             - If any process sends a DONE message, it then performs
+ *               a BFS search of the MST formed by the algorithm
  *
- * We have tested this program on configurations of up to 80 nodes.
+ * We have tested this program on configurations of up to 32 nodes.
  */
 
 #include <algorithm>
@@ -114,7 +113,6 @@ int main( int argc, char** argv ) {
     cerr << " (successful)" << endl;
 
     // Set up all of the socket pairs between neighbors...
-
     int sockpair[2];
 
     for( int i=0; i<numNodes; i++ ) {
@@ -147,15 +145,15 @@ int main( int argc, char** argv ) {
                 // These operate much like other types of sockets, except that
                 // all communications happen within the kernel.
 
+            	// We use SEQPACKET socket pairs, because they observe message
+            	// boundaries.
                 if ( socketpair( AF_LOCAL, SOCK_SEQPACKET, 0, sockpair ) < 0 ) {
                     string err( "Unable to create local socket pair: " );
                     err += strerror( errno );
                     throw runtime_error( err );
                 }
 
-                // Add the appropriate file descriptors to process i's and j's neighbor
-                // lists.
-
+                // Add the appropriate neighbor object to each node's neighbor list...
                 neighbors[i].push_back( Neighbor{ nodeIds[j], sockpair[0], neighborWts[i][j]} );
                 neighbors[j].push_back( Neighbor{ nodeIds[i], sockpair[1], neighborWts[i][j]} );
                 verbose && cout << "Creating socketpair [" << sockpair[0] << ", " << sockpair[1] << "] for nodes "
@@ -166,10 +164,15 @@ int main( int argc, char** argv ) {
             }
         }
 
+        // Create a new array of Node objects
         Node *n = new Node( nodeIds[i], master_fd, neighbors[i] );
         nodes.push_back( n );
         //
         // Spawn a new thread and push it back into the thread vector array...
+        //
+        //    Note, in C++, when creating a thread for a member method,
+        //    you pass in the owner object as the first parameter of the
+        //    thread constructor.
         threads.push_back( new thread( &Node::run, n ) );
         threads.back()->detach();
     }
@@ -184,7 +187,6 @@ int main( int argc, char** argv ) {
         usleep(DELAY);
 
         Message tick( Message::MSG_TICK, round );
-
         // Send a tick to everyone
         cout << "Sending to " << master_fds.size() <<
              " threads: " << tick.toString() << endl;
@@ -193,25 +195,34 @@ int main( int argc, char** argv ) {
         }
 
         usleep(DELAY);
-
         int doneCount=0;
-        // Read a message from each process file descriptor... this will either be a
-        // LEADER message or a DONE message.
+        // Read a message from each process file descriptor... this will either be an
+        // ACK message or a DONE message.
         for( unsigned i=0; i<master_fds.size(); i++ ) {
             // Get the message and parse it...
             Message msg( master_fds[i] );
 
             switch( msg.msgType ) {
-            case Message::MSG_DONE:  // I know who the leader is.  Ignore me from here on out
+            /*
+             * The protocol has finished correctly.  Go ahead and gather the BFS
+             * information
+             */
+            case Message::MSG_DONE:
                 cout << "Got message from fd " << master_fds[i] << ": " << msg.toString() << endl;
                 leader = msg.round;
                 bfsQ.push( leader );
                 break;
-            // fall through
+
+            /*
+             * Thread i is done with this tick.
+             */
             case Message::MSG_ACK:    // I don't know, but I'm done with this round.
                 doneCount++;
                 break;
 
+            /*
+             * WTF?  How did we get here?
+             */
             default:
                 throw runtime_error(
                     string {"Master thread received unexpected message: "} +
@@ -221,6 +232,10 @@ int main( int argc, char** argv ) {
         cout << "Received ACK from " << doneCount << " threads." << endl;
     }
 
+    /*
+     * Perform a BFS walk through the MST, and send a
+     * REPORT to each node in turn.
+     */
     Message done{ Message::MSG_REPORT };
     cout << "got LEADER(" << leader << ")" << endl;
     while( !bfsQ.empty() ) {
@@ -237,10 +252,15 @@ int main( int argc, char** argv ) {
         bool gotDone = false;
         do {
             Message msg( master_fds[i] );
+            /*
+             * Message of type REPORT <ID> indicates that node <ID>
+             * is one of my children
+             */
             if ( msg.msgType == Message::MSG_REPORT ) {
             	bfsQ.push( msg.round );
             	cout << " " << msg.round;
             } else if ( msg.msgType == Message::MSG_DONE ) {
+            	// Done message means I don't have any more children in the MST
             	gotDone = true;
             }
         } while ( !gotDone );

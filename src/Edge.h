@@ -2,7 +2,18 @@
  * Edge.h
  *
  *  Created on: Nov 11, 2014
- *      Author: ken
+ *  CS6380 - Distributed Computing
+ *  Fall 2014
+ *  Programming Assignment #2
+ *
+ *  Definition of an Edge object.
+ *     Most importantly, we define as an edge as a tuple <v1, v2, w>
+ *     Where v1 and v2 are vertices, with v1 < v2.
+ *     W is a floating-point weight.
+ *
+ *     We also define constructors, a to_string() method so we can output
+ *     to a stream, and we define the important comparators, so we can
+ *     intuitively compare edges against each other.
  */
 
 #ifndef __EDGE_H_
@@ -34,32 +45,32 @@ public:
 
     Edge& operator=( const Edge& ) = default;
 
-    bool operator<( const Edge& e2 ) {
+    bool operator<( const Edge& e2 ) const {
     	return ( weight == e2.weight ) ?
     			    (( v1 == e2.v1 ) ? ( v2 < e2.v2 ) : ( v1 < e2.v1 )) :
 	    			( weight < e2.weight );
     }
-    bool operator<=( const Edge& e2 ) {
+    bool operator<=( const Edge& e2 ) const {
     	return ( weight == e2.weight ) ?
     			    (( v1 == e2.v1 ) ? ( v2 <= e2.v2 ) : ( v1 < e2.v1 )) :
 	    			( weight < e2.weight );
     }
-    bool operator>( const Edge& e2 ) {
+    bool operator>( const Edge& e2 ) const {
     	return ( weight == e2.weight ) ?
     			    (( v1 == e2.v1 ) ? ( v2 > e2.v2 ) : ( v1 > e2.v1 )) :
 					( weight > e2.weight );
     }
-    bool operator>=( const Edge& e2 ) {
+    bool operator>=( const Edge& e2 ) const {
     	return ( weight == e2.weight ) ?
     			    (( v1 == e2.v1 ) ? ( v2 >= e2.v2 ) : ( v1 > e2.v1 )) :
 					( weight > e2.weight );
     }
-    bool operator!=( const Edge& e2 ) {
+    bool operator!=( const Edge& e2 ) const {
         return ( weight != e2.weight ) ||
         	   ( v1 != e2.v1 ) ||
     		   ( v2 != e2.v2 );
     }
-    bool operator==( const Edge& e2 ) {
+    bool operator==( const Edge& e2 ) const {
         return ( weight == e2.weight ) &&
         	   ( v1 == e2.v1 ) &&
     		   ( v2 == e2.v2 );

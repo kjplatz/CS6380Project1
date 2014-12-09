@@ -27,7 +27,7 @@
 // Parameters:
 //    cfg_file    : Name of the configuration file
 //    return_vals : (Reference to) vector of ints to return the node ID's in
-//    return_nbrs : (Reference to) vector of vector of ints to return the neighbor array
+//    return_nbrs : (Reference to) vector of vector of floats to return the neighbor array
 // Return value:
 //    int         : Number of neighbors found
 
@@ -42,7 +42,7 @@ int parse_config( std::string cfg_file,
 //    master_fd   : Socket file descriptor to talk to/from master thread
 //    neighbor_fds: The socket file descriptors of my neighbors
 #include "Neighbor.h"
-void run_node( int node_id, int master_fd,  std::vector<Neighbor> neighbor_fds );
+//void run_node( int node_id, int master_fd,  std::vector<Neighbor> neighbor_fds );
 
 extern bool verbose;
 
@@ -51,4 +51,4 @@ const int DELAY=100000;
 
 #include "Message.h"
 
-#endif /* CS6380PROJECT1_H_ */
+#endif /* CS6380PROJECT2_H_ */

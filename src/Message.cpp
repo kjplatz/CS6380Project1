@@ -2,10 +2,15 @@
  * Message.cpp
  *
  *  Created on: Sep 25, 2014
+ *  Updated for Project #2
  *  Authors:
  *      Kenneth Platz
  *      Joshua Olson
  *      Brian Snedic
+ *
+ *  Updates for Project #2:
+ *      We added routines in the constructors and toString() to handle
+ *      the new message types (defined in Message.h)
  */
 
 #include "Message.h"

@@ -1,11 +1,19 @@
 /*
  * Message.h
  *
+ *  CS 6380, Distributed Computing
+ *  Fall 2014
+ *
  *  Created on: Sep 25, 2014
  *  Authors:
  *      Kenneth Platz
  *      Joshua Olson
  *      Brian Snedic
+ *
+ *  Updated for Project #2:
+ *  Added the following message types:
+ *      MSG_ACK, MSG_INITIATE, MSG_REPORT, MSG_TEST, MSG_ACCEPT,
+ *      MSG_REJECT, MSG_CHANGEROOT, MSG_CONNECT, MSG_CONNECT2ME
  */
 
 #ifndef MESSAGE_H_
@@ -36,9 +44,6 @@ public:
 		MSG_CHANGEROOT,     // I'm your new leader now...
 		MSG_CONNECT,        // You, leaf! Connect!!!
 		MSG_CONNECT2ME      // Connect with me, please!
-//		MSG_EXPLORE,
-//      MSG_REJECT,
-//      MSG_LEADER
                  } msgType;
 
     int  round;
