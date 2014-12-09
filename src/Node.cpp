@@ -409,9 +409,10 @@ void Node::doConvergecast() {
 
 	bool phaseDone = true;
 	for (auto nbr : trees) {
+    	fout << "DEBUG:  doConvergecast: Node " << nbr.getId() << ": Parent " << myParent.getId() << ": "  << nbr.hasResponded() << endl;
 		if (nbr == myParent)
 			continue;
-//    	fout << "doConvergecast: Node " << nbr.getId() << ": " << nbr.hasResponded() << endl;
+
 		phaseDone = phaseDone && nbr.hasResponded();
 	}
 
@@ -419,6 +420,7 @@ void Node::doConvergecast() {
 	 * Okay, we've received responses from everyone who we are waiting on...
 	 */
 	if (phaseDone) {
+    	fout << "DEBUG:  doConvergecast: phaseDone=true " << endl; 
 		if (isLeader) {
 			fout << "    Phase is done..." << endl;
 			fout << "    Best report is: " << bufferedReport.toString() << endl;
