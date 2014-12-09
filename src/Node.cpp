@@ -365,7 +365,7 @@ void Node::processInitiate(const Neighbor& nbr, const Message& msg) {
 	fout << "Let's get this round started, baby!" << endl;
 	// Forward the message to all tree nodes
 	// And clear the "responded" flag...
-	for ( auto it = neighbors.begin(); it < neighbors.end(); it++ ) {
+	for ( auto it = trees.begin(); it < trees.end(); it++ ) {
 		if ( *it == myParent)
 			continue;
 		fout << "   Node " << it->getId() << ": Dude!! Wake up and begin!!"
