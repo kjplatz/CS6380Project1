@@ -372,7 +372,7 @@ void Node::processInitiate(const Neighbor& nbr, const Message& msg) {
 				<< endl;
 		Message fwd { msg };
 		fwd.round = round + distribution(generator);
-		fwd.send(nbr.getFd());
+		fwd.send(it->getFd());
 		it->clearResponded();
 	}
 
