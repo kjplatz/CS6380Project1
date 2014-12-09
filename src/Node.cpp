@@ -188,9 +188,9 @@ void Node::processAccept(const Neighbor& nbr, const Message& msg) {
 
 	// Check to see if we're ready to convergecast this back up the tree.
 	//TODO: BUG - check if received report from children
-	if(trees.size() <= 1) {// Leaf layer, only has a parent or is a singleton, not waiting on any reports	
+//	if(trees.size() <= 1) {// Leaf layer, only has a parent or is a singleton, not waiting on any reports	
     		doConvergecast();
-	}
+//	}
 }
 
 /*
