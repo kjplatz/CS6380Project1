@@ -155,14 +155,17 @@ void Node::queueIncoming() {
  */
 void Node::processAccept( const Neighbor& nbr, const Message& msg ) {
 	// Is this edge the best we've seen so far?
-	if ( bufferedReport.edge > msg.edge ) {
+	if ( bufferedReport.edge > nbr.getEdge(myId) ) {//msg.edge ) {
 		bufferedReport.edge = nbr.getEdge(myId);
 		bufferedReport.level = myId;
 	}
 	hasSentTest = false;
 
 	// Check to see if we're ready to convergecast this back up the tree.
-    doConvergecast();
+	//TODO: BUG - check if received report from children
+	if(trees.size() <= 1) {// Leaf layer, only has a parent or is a singleton, not waiting on any reports	
+    		doConvergecast();
+	}
 }
 
 /*
