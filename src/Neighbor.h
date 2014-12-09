@@ -44,7 +44,7 @@ public:
 	void changeType( const EdgeType et ) { edgeType = et; }
 
 	bool operator<( const Neighbor& n ) const {
-		return (weight < n.weight) || (id < n.id);
+		return (weight == n.weight) ? (id < n.id) : (weight < n.weight);
 	}
 
 	bool operator>( const Neighbor& n ) const {
