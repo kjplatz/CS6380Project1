@@ -46,6 +46,9 @@ void run_node( int node_id, int master_fd,  std::vector<Neighbor> neighbor_fds )
 
 extern bool verbose;
 
+// Delay between ticks (in milliseconds)
+const int DELAY=100000;
+
 #include "Message.h"
 
 #endif /* CS6380PROJECT1_H_ */

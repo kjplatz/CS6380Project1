@@ -22,8 +22,8 @@ const Message nullReport { Message::MSG_REPORT, 0, Edge { 0, 0, numeric_limits<
 Node::Node(int _myId, int mfd, vector<Neighbor> nbrs) :
 		myParent(-1, -1, -1), myId(_myId), myComponent(Edge { myId, 0, 0 }), masterFd(
 				mfd), neighbors(std::move(nbrs)), fout(
-				string { "node" } + to_string(myId) + string { ".log" }), distribution(
-				1, 1) { //20) { //TODO: change this back to 20 from 1, 1 is for testing only
+				string { "node" } + to_string(myId) + string { ".log" }),
+				distribution( 1, 20) { //20) { //TODO: change this back to 20 from 1, 1 is for testing only
 	// Create a seed for the PRNG...
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
 	seed += myId;
@@ -616,6 +616,10 @@ void Node::processConnect2Me(const Neighbor& nbr, const Message& msg) {
 			fout << "Sending CHANGEROOT to " << nbr.getId() << ": "
 					<< chr.toString() << endl;
 
+			ostringstream os;
+			os << "    >>> Node " << nbr.getId() << " got absorbed. <<<" << endl;
+			cout << os.str();
+
 			if (hasSentTest) {
 				Message init { Message::MSG_INITIATE, round
 						+ distribution(generator) };
@@ -629,6 +633,11 @@ void Node::processConnect2Me(const Neighbor& nbr, const Message& msg) {
 
 void Node::createNewComponent(const Neighbor& nbr) {
 	myLevel++;
+
+	ostringstream os;
+	os << "    >>> Node " << myId << " going up to level " << myLevel << " <<<" << endl;
+	cout << os.str();
+
 	fout << "><>< GOING UP TO LEVEL " << myLevel << " ><><" << endl;
 	fout << "><>< I HAVE THE POWER (I'm the new leader) ><><" << endl;
 	isLeader = true;

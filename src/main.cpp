@@ -181,7 +181,7 @@ int main( int argc, char** argv ) {
     queue<int> bfsQ;
     while( leader < 0 ) {
         round++;
-        usleep(250000);
+        usleep(DELAY);
 
         Message tick( Message::MSG_TICK, round );
 
@@ -192,7 +192,7 @@ int main( int argc, char** argv ) {
             tick.send( fd );
         }
 
-        usleep(250000);
+        usleep(DELAY);
 
         int doneCount=0;
         // Read a message from each process file descriptor... this will either be a
