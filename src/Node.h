@@ -1,8 +1,12 @@
 /*
  * Node.h
+ * CS 6380, Distributed Computing
+ * Fall 2014, Project #2
+ *     Kenneth Platz
+ *     Brian Snedic
+ *     Josh Olson
  *
- *  Created on: Nov 30, 2014
- *      Author: ken
+ * Header file to define the "Node" class
  */
 
 #ifndef SRC_NODE_H_

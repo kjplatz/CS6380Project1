@@ -1,8 +1,16 @@
 /*
  * Node.cpp
  *
- *  Created on: Nov 30, 2014
- *      Author: ken
+ *  CS6380, Distributed Computing
+ *  Fall 2014, Project #2
+ *      Kenneth Platz
+ *      Brian Snedic
+ *      Josh Olson
+ *
+ * Nov 30, 2014:
+ *     Refactored the run_node() function into an object, because the
+ *     single-function was getting very unwieldy and required duplicating
+ *     code in many different places
  */
 
 #include <chrono>
@@ -16,6 +24,9 @@
 #include "Node.h"
 
 using namespace std;
+/*
+ * An empty report message to indicate that we have nothing to report.
+ */
 const Message nullReport { Message::MSG_REPORT, 0, Edge { 0, 0, numeric_limits<
 		float>::max() }, -1 };
 
@@ -34,6 +45,33 @@ Node::Node(int _myId, int mfd, vector<Neighbor> nbrs) :
 	round = 0;
 }
 
+/*
+ * Node::run()
+ *     This runs the main loop of each node.  We start out by partitioning our neighbors vector into 3
+ *     sets:
+ *         candidates:  Nodes that we haven't decided are in the MST or not
+ *         trees:       Nodes we've established are in the MST
+ *         rejects:     Nodes that are definitely NOT in the MST
+ *
+ *     We start things out by sorting our candidate neighbors; the one with the smallest edge
+ *         will end up as candidates.front().  We start the ball running by sending a TEST message
+ *         to him.
+ *
+ *     Every message we send is of the format:
+ *         MESSAGE_NAME <round> <parameters>
+ *
+ *         The <round> parameter indicates the earliest round in which we can deliver our message.
+ *
+ *     At the beginning of each round, we check each incoming channel for a message.  Any messages we
+ *         find, we put into that neighbor's message queue.
+ *
+ *     After checking the incoming channels, we check the first message in each message queue.  If the
+ *         <round> parameter is >= the current round, we pop it off the head of the queue and process it.
+ *
+ *     We terminate after we get a "REPORT" message from the master thread.  Once we get a REPORT message,
+ *         we send the master thread a series of REPORT messages with the ID's of our "tree" nodes
+ *         (minus our parent, of course).
+ */
 void Node::run() {
 	fout << "Starting node " << myId << endl;
 	bufferedReport = nullReport;
@@ -177,6 +215,11 @@ void Node::queueIncoming() {
 
 /*
  * Got an accept message.  This can start a whole bunch of things in motion...
+ *     If the edge is better than that stored in our bufferedReport(), we replace
+ *     our bufferedReport with that edge.
+ *
+ *     We then clear our hasSentTest flag, and decide whether it's time to convergecast back
+ *     to the root.
  */
 void Node::processAccept(const Neighbor& nbr, const Message& msg) {
 	// Is this edge the best we've seen so far?
@@ -195,6 +238,14 @@ void Node::processAccept(const Neighbor& nbr, const Message& msg) {
 
 /*
  * We've been chrooted!!! Aaaaah!!!
+ *
+ * Several things happen here:
+ *    - We change myComponent and myLevel to match that of the CHANGEROOT message
+ *    - The sender of the CHANGEROOT message becomes our new parent (and a tree node)
+ *    - clear my isLeader flag
+ *    - forward the CHANGEROOT message to all of our tree nodes (minus our parent)
+ *    - clear the bufferedReport
+ *    - clear the hasSentTest    -- an INITIATE message will come along to do this.
  */
 void Node::processChangeRoot(const Neighbor& nbr, const Message& msg) {
 	fout << "Processing CHANGEROOT from " << nbr.getId() << endl;

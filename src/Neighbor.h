@@ -1,8 +1,14 @@
 /*
  * Neighbor.h
  *
- *  Created on: Nov 11, 2014
- *      Author: ken
+ * CS6380, Distributed Computing
+ * Fall 2014, Project 2
+ *     Kenneth Platz
+ *     Brian Snedic
+ *     Josh Olson
+ *
+ * Defines a class to represent a Neighbor, as viewed by a
+ * node within our simulation.
  */
 
 #ifndef __NEIGHBOR_H
@@ -48,7 +54,7 @@ public:
 	}
 
 	bool operator>( const Neighbor& n ) const {
-		return (weight > n.weight) || (id > n.id);
+		return (weight == n.weight) ? (id > n.id) : (weight > n.weight);
 	}
 
 	bool operator==( const Neighbor& n ) const {
@@ -56,7 +62,7 @@ public:
 	}
 
 	bool operator!=( const Neighbor& n ) const {
-		return (weight != n.weight) || (id != n.id) || (fd != n.fd);
+		return (id != n.id);
 	}
 
 	std::string to_string() const {
