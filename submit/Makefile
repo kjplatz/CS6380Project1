@@ -8,6 +8,7 @@ OBJFILES = $(CXXFILES:%.cpp=%.o)
 all: bin/CS6380Project2
 
 bin/CS6380Project2: $(OBJFILES)
+	mkdir bin > /dev/null 2> /dev/null
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 clean:

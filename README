@@ -10,6 +10,11 @@ Attached is our submission for the Distributed Computing Project #2.  We
 have included the following files:
     submit/
         Makefile              Makefile to create the executable
+        doc/                  Directory of PDF files and documentation
+            P2-graphs.pdf     Diagrams for the P2BS10_c and P2BS10_d cases
+            P2KJP32_a.pdf     Diagram for the P2KJP32_a test case
+                              Note: These diagrams do not show the complete
+                              graph, just the MST within the graph.
         bin/                  Directory to hold the generated binary
         run/                  Directory for configuration and log files
             P2BS10_c.txt      10-node input file
